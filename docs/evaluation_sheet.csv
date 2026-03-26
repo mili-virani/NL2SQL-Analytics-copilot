@@ -1,0 +1,29 @@
+question_id,question,primary_schema,secondary_schema,expected_tables,query_type,difficulty,generated_sql,execution_success,schema_routing_correct,final_answer_correct,notes
+Q1,What is the total monthly revenue for 2025?,sales,,sales.orders,aggregation_time_series,easy,,,,,
+Q2,Which 5 products generated the highest sales revenue?,sales,inventory,sales.order_items|inventory.products,ranking_aggregation,medium,,,,,
+Q3,Which customers placed the highest number of orders?,sales,customer,sales.orders|customer.customers,ranking_aggregation,medium,,,,,
+Q4,What is the average order value by month?,sales,,sales.orders,aggregation_time_series,medium,,,,,
+Q5,How many orders were cancelled, shipped, delivered, returned, and processing?,sales,,sales.orders,grouped_count,easy,,,,,
+Q6,Which day had the highest sales revenue?,sales,,sales.orders,ranking_aggregation,medium,,,,,
+
+Q7,Which products are currently low in stock?,inventory,,inventory.products|inventory.stock,filter_threshold,easy,,,,,
+Q8,Which product category has the highest total stock value?,inventory,,inventory.products|inventory.stock,aggregation_derived_metric,medium,,,,,
+Q9,What are the top 5 most expensive products?,inventory,,inventory.products,ranking,easy,,,,,
+Q10,Which products need restocking soon based on reorder level?,inventory,,inventory.products|inventory.stock,filter_business_rule,easy,,,,,
+
+Q11,Who are the repeat customers?,customer,sales,customer.customers|sales.orders,business_logic_aggregation,medium,,,,,
+Q12,Which city has the most customers?,customer,,customer.addresses,aggregation_ranking,easy,,,,,
+Q13,Which states have the highest number of customers?,customer,,customer.addresses,aggregation_ranking,easy,,,,,
+Q14,Which customers joined most recently?,customer,,customer.customers,sorting_date,easy,,,,,
+
+Q15,Which products have received the most support tickets?,support,inventory,support.tickets|inventory.products,aggregation_ranking,medium,,,,,
+Q16,Which issue types are most common?,support,,support.tickets,grouped_count,easy,,,,,
+Q17,How many support tickets are open, resolved, closed, or in progress?,support,,support.tickets,grouped_count,easy,,,,,
+Q18,Which customers raised multiple complaints?,support,customer,support.tickets|customer.customers,aggregation_ranking,medium,,,,,
+
+Q19,Which customers generated the highest revenue and how many tickets have they raised?,sales,customer|support,sales.orders|customer.customers|support.tickets,multi_schema_aggregation,hard,,,,,
+Q20,Which low-stock products are also among the top-selling products?,inventory,sales,inventory.stock|sales.order_items|inventory.products,multi_schema_business_logic,hard,,,,,
+Q21,Which product categories generate the most sales revenue?,sales,inventory,sales.order_items|inventory.products,aggregation_join,medium,,,,,
+Q22,Which cities generate the highest revenue?,sales,customer,sales.orders|customer.addresses,aggregation_join,medium,,,,,
+Q23,Which products have both high sales and high support ticket volume?,sales,inventory|support,sales.order_items|inventory.products|support.tickets,multi_schema_ranking,hard,,,,,
+Q24,Among repeat customers, who has raised the most support tickets?,customer,sales|support,customer.customers|sales.orders|support.tickets,multi_schema_business_logic,hard,,,,,

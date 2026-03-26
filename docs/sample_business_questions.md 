@@ -1,0 +1,51 @@
+# Enterprise Multi-Agent NL2SQL Assistant
+## Sample Business Questions
+
+---
+
+## Sales
+
+1. What is the total monthly revenue for 2025?
+2. Which 5 products generated the highest sales revenue?
+3. Which customers placed the highest number of orders?
+4. What is the average order value by month?
+5. How many orders were cancelled, shipped, delivered, returned, and processing?
+6. Which day had the highest sales revenue?
+
+---
+
+## Inventory
+
+7. Which products are currently low in stock?
+8. Which product category has the highest total stock value?
+9. What are the top 5 most expensive products?
+10. Which products need restocking soon based on reorder level?
+
+---
+
+## Customer
+
+11. Who are the repeat customers?
+12. Which city has the most customers?
+13. Which states have the highest number of customers?
+14. Which customers joined most recently?
+
+---
+
+## Support
+
+15. Which products have received the most support tickets?
+16. Which issue types are most common?
+17. How many support tickets are open, resolved, closed, or in progress?
+18. Which customers raised multiple complaints?
+
+---
+
+## Cross-Schema (Advanced)
+
+19. Which customers generated the highest revenue and how many tickets have they raised?
+20. Which low-stock products are also among the top-selling products?
+21. Which product categories generate the most sales revenue?
+22. Which cities generate the highest revenue?
+23. Which products have both high sales and high support ticket volume?
+24. Among repeat customers, who has raised the most support tickets?
