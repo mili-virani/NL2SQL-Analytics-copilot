@@ -21,10 +21,7 @@ app = FastAPI(title="Enterprise Multi-Agent NL2SQL Assistant")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://127.0.0.1:5173",
-        "http://localhost:5173",
-    ],
+    allow_origins=["*"],  # for deployment
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
