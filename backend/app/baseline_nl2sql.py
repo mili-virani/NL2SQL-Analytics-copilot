@@ -5,27 +5,72 @@ from app.sql_executor import execute_sql
 from app.sql_validator import validate_sql
 from app.sql_repair import repair_sql
 from app.explanation import generate_explanation
+from app.query_classifier import classify_user_input
+from app.schema_router import route_schema
 
 
 def run_baseline_nl2sql(question: str):
-    selected_schema = choose_schema(question)
+    classification = classify_user_input(question)
+
+    if not classification["needs_sql_pipeline"]:
+        response_type_map = {
+            "CHAT": "chat",
+            "AMBIGUOUS_ANALYTIC": "ambiguous",
+            "OUT_OF_SCOPE": "out_of_scope",
+        }
+
+        return {
+            "response_type": response_type_map.get(classification["label"], "out_of_scope"),
+            "question": question,
+            "assistant_message": classification["message"],
+            "execution_success": False,
+            "repaired": False,
+            "selected_schema": None,
+            "generated_sql": None,
+            "results": [],
+            "explanation": classification["message"],
+            "audit_trail": {
+                "question": question,
+                "classification": classification,
+                "selected_schema": None,
+                "initial_sql": None,
+                "initial_validation": None,
+                "initial_error": None,
+                "repair_attempted": False,
+                "repaired_sql": None,
+                "repaired_validation": None,
+                "execution_outcome": "not_routed_to_sql_pipeline",
+            },
+            "suggestions": [
+                "What were total sales last month?",
+                "Which products are currently low in stock?",
+                "Show top 5 customers by lifetime value",
+                "Which issue types are most common?",
+            ],
+        }
+
+    routing = route_schema(question)
+    selected_schema = routing["selected_schema"]
     schema_metadata = get_schema_metadata(selected_schema)
 
     audit_trail = {
-        "question": question,
-        "selected_schema": selected_schema,
-        "initial_sql": None,
-        "initial_validation": None,
-        "initial_error": None,
-        "repair_attempted": False,
-        "repaired_sql": None,
-        "repaired_validation": None,
-        "execution_outcome": None,
-    }
+    "question": question,
+    "classification": classification,
+    "schema_routing": routing,
+    "selected_schema": selected_schema,
+    "initial_sql": None,
+    "initial_validation": None,
+    "initial_error": None,
+    "repair_attempted": False,
+    "repaired_sql": None,
+    "repaired_validation": None,
+    "execution_outcome": None,
+}
 
     if not schema_metadata:
         audit_trail["execution_outcome"] = "failed"
         return {
+            "response_type": "analytic_query",
             "question": question,
             "selected_schema": selected_schema,
             "generated_sql": None,
@@ -47,6 +92,7 @@ def run_baseline_nl2sql(question: str):
         explanation = "The generated SQL was blocked before execution because it failed validation checks."
 
         return {
+            "response_type": "analytic_query",
             "question": question,
             "selected_schema": selected_schema,
             "generated_sql": generated_sql,
@@ -71,6 +117,7 @@ def run_baseline_nl2sql(question: str):
         )
 
         return {
+            "response_type": "analytic_query",
             "question": question,
             "selected_schema": selected_schema,
             "generated_sql": generated_sql,
@@ -107,6 +154,7 @@ def run_baseline_nl2sql(question: str):
                 )
 
                 return {
+                    "response_type": "analytic_query",
                     "question": question,
                     "selected_schema": selected_schema,
                     "generated_sql": generated_sql,
@@ -132,6 +180,7 @@ def run_baseline_nl2sql(question: str):
             )
 
             return {
+                "response_type": "analytic_query",
                 "question": question,
                 "selected_schema": selected_schema,
                 "generated_sql": generated_sql,
@@ -151,6 +200,7 @@ def run_baseline_nl2sql(question: str):
             )
 
             return {
+                "response_type": "analytic_query",
                 "question": question,
                 "selected_schema": selected_schema,
                 "generated_sql": generated_sql,

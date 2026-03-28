@@ -11,6 +11,18 @@ if not api_key:
 client = genai.Client(api_key=api_key)
 
 
+def generate_text(prompt: str, model: str = "gemini-2.5-flash") -> str:
+    response = client.models.generate_content(
+        model=model,
+        contents=prompt,
+    )
+
+    if not response or not hasattr(response, "text") or response.text is None:
+        raise ValueError("LLM did not return a valid text response.")
+
+    return response.text.strip()
+
+
 def generate_sql(question: str, schema_name: str, schema_metadata: dict) -> str:
     prompt = f"""
 You are a PostgreSQL SQL generator.
@@ -41,18 +53,8 @@ Rules:
 6. Do not generate INSERT, UPDATE, DELETE, DROP, or ALTER.
 """
 
-    response = client.models.generate_content(
-        model="gemini-2.5-flash",
-        contents=prompt,
-    )
+    sql = generate_text(prompt, model="gemini-2.5-flash")
 
-    # 🔥 SAFE EXTRACTION
-    if not response or not hasattr(response, "text") or response.text is None:
-        raise ValueError("LLM did not return valid SQL response.")
-
-    sql = response.text.strip()
-
-    # clean markdown
     sql = sql.replace("```sql", "").replace("```", "").strip()
 
     return sql

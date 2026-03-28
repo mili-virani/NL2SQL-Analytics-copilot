@@ -423,6 +423,84 @@ function RepairSummaryStrip() {
   );
 }
 
+function AssistantTextReply({ data }) {
+  const suggestions = data.suggestions || [];
+
+  return (
+    <div
+      style={{
+        display: "flex",
+        gap: 12,
+        marginBottom: 28,
+        alignItems: "flex-start",
+      }}
+    >
+      <div
+        style={{
+          width: 34,
+          height: 34,
+          borderRadius: 10,
+          background: "linear-gradient(135deg, #1a1a3e, #2a1a50)",
+          border: "1px solid #3a3570",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          fontSize: 14,
+          color: "#9f97ef",
+          flexShrink: 0,
+        }}
+      >
+        ◈
+      </div>
+
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div
+          style={{
+            padding: "14px 18px",
+            background: "#0e1017",
+            border: "1px solid #1e2230",
+            borderRadius: "4px 18px 18px 18px",
+            color: "#c8d0e8",
+            fontSize: 14,
+            lineHeight: 1.7,
+            fontFamily: "'DM Sans', 'Segoe UI', sans-serif",
+          }}
+        >
+          {data.assistant_message || data.explanation}
+        </div>
+
+        {suggestions.length > 0 && (
+          <div
+            style={{
+              marginTop: 12,
+              display: "flex",
+              flexWrap: "wrap",
+              gap: 8,
+            }}
+          >
+            {suggestions.map((item) => (
+              <span
+                key={item}
+                style={{
+                  padding: "7px 12px",
+                  borderRadius: 999,
+                  background: "#0a0d16",
+                  border: "1px solid #1e2230",
+                  color: "#8fa1c7",
+                  fontSize: 12,
+                  fontFamily: "monospace",
+                }}
+              >
+                {item}
+              </span>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function MessageBubble({ msg }) {
   const [activeTab, setActiveTab] = useState("results");
   if (msg.role === "user") {
@@ -508,6 +586,13 @@ function MessageBubble({ msg }) {
   }
 
   const { data } = msg;
+  const isTextOnlyReply =
+    data?.response_type &&
+    data.response_type !== "analytic_query";
+
+  if (isTextOnlyReply) {
+    return <AssistantTextReply data={data} />;
+  }
   const tabs = [
     { id: "results", label: `Results (${(data.results || []).length})` },
     { id: "chart", label: "Chart" },
@@ -822,7 +907,7 @@ export default function App() {
                   letterSpacing: "-0.01em",
                 }}
               >
-                 NL2SQL Analytics Copilot
+                NL2SQL Analytics Copilot
               </p>
               <p
                 style={{
