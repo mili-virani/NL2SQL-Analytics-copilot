@@ -1,4 +1,6 @@
 import { useState, useRef, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "./context/AuthContext";
 import ResultChart from "./components/ResultChart";
 
 const API_BASE = import.meta.env.VITE_API_BASE || "http://127.0.0.1:8001";
@@ -757,6 +759,8 @@ function MessageBubble({ msg }) {
 }
 
 export default function App() {
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -778,9 +782,12 @@ export default function App() {
     setLoading(true);
 
     try {
-      const res = await fetch(`${API_BASE}/nl2sql/query`, {
+      const res = await fetch(`${API_BASE}/chat/query`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${localStorage.getItem('access_token')}`
+        },
         body: JSON.stringify({ question }),
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
@@ -841,11 +848,37 @@ export default function App() {
   const isEmpty = messages.length === 0;
 
   return (
-    <>
+    <div style={{ display: "flex", height: "100vh", background: "#060810", color: "#c8d0e8", fontFamily: "'Inter', sans-serif" }}>
+      <div style={{ width: 260, background: "#0e1017", borderRight: "1px solid #1e2230", display: "flex", flexDirection: "column" }}>
+        <div style={{ padding: "24px 20px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 30 }}>
+            <div style={{ width: 32, height: 32, borderRadius: 8, background: "linear-gradient(135deg, #4adb8a, #4a9eff)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: "bold", fontSize: 16 }}>◈</div>
+            <h1 style={{ margin: 0, fontSize: 16, color: "#fff", letterSpacing: "0.02em" }}>NL2SQL Copilot</h1>
+          </div>
+          <div style={{ padding: "16px", borderRadius: "12px", background: "#12151f", border: "1px solid #1e2230", marginBottom: 20 }}>
+            <p style={{ margin: "0 0 4px 0", fontSize: 14, color: "#fff", fontWeight: 500 }}>{user?.name || "Guest User"}</p>
+            <p style={{ margin: 0, fontSize: 12, color: "#8fa1c7", fontFamily: "monospace" }}>Role: {user?.role || "guest"}</p>
+          </div>
+          <nav style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            <button style={{ padding: "10px 14px", background: "#1a1e2a", color: "#fff", border: "none", borderRadius: 8, textAlign: "left", cursor: "pointer", fontSize: 14, fontWeight: 500 }}>Chat & Analytics</button>
+            {(user?.role === "admin" || user?.role === "super_admin") && (
+              <button onClick={() => navigate("/admin")} style={{ padding: "10px 14px", background: "transparent", color: "#8fa1c7", border: "none", borderRadius: 8, textAlign: "left", cursor: "pointer", fontSize: 14, fontWeight: 500 }}>Admin Dashboard</button>
+            )}
+          </nav>
+        </div>
+        <div style={{ marginTop: "auto", padding: 20 }}>
+          {user && user.role !== "guest" ? (
+            <button onClick={() => { logout(); navigate("/login"); }} style={{ width: "100%", padding: "10px", background: "#1a1008", border: "1px solid #3a1010", color: "#e24b4a", borderRadius: 8, cursor: "pointer", fontWeight: 600, fontSize: 14 }}>Sign Out</button>
+          ) : (
+            <button onClick={() => { logout(); navigate("/login"); }} style={{ width: "100%", padding: "10px", background: "#0e1810", border: "1px solid #102a15", color: "#4adb8a", borderRadius: 8, cursor: "pointer", fontWeight: 600, fontSize: 14 }}>Sign Up / Log In</button>
+          )}
+        </div>
+      </div>
+      <div style={{ flex: 1, position: "relative", display: "flex", flexDirection: "column" }}>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;600&family=Inter:wght@400;500;600&display=swap');
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { background: #060810; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
         @keyframes pulse {
           0%, 100% { opacity: 0.3; transform: scale(0.8); }
           50% { opacity: 1; transform: scale(1.1); }
@@ -1204,6 +1237,7 @@ export default function App() {
         </div>
       </div>
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
-    </>
+    </div>
+    </div>
   );
 }

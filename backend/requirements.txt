@@ -6,3 +6,9 @@ python-dotenv==1.2.2
 pydantic==2.12.5
 google-genai==1.68.0
 httpx==0.28.1
+redis==5.0.3
+passlib[bcrypt]==1.7.4
+python-jose[cryptography]==3.3.0
+google-auth>=2.47.0
+playwrightpasslib[bcrypt]
+python-multipart
