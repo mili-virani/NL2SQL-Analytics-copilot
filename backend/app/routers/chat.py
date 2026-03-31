@@ -22,4 +22,9 @@ def submit_query(
         response = route_query(request.question)
         return response
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        import traceback
+        return {
+            "mode": "CHAT",
+            "results": f"**Backend Crash Detected**:\n\n```text\n{traceback.format_exc()}\n```",
+            "explanation": "An unhandled exception occurred in the orchestrator."
+        }

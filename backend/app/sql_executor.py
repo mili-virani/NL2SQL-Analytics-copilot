@@ -10,5 +10,11 @@ def execute_sql(query: str):
 
     with engine.connect() as connection:
         result = connection.execute(text(query))
-        rows = [dict(row._mapping) for row in result]
+        rows = []
+        for row in result:
+            row_dict = dict(row._mapping)
+            for k, v in row_dict.items():
+                if type(v) not in (int, float, str, bool, type(None)):
+                    row_dict[k] = str(v)
+            rows.append(row_dict)
         return rows
