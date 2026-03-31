@@ -37,22 +37,25 @@ def classify_intent(question: str) -> str:
     """
     try:
         response = client.models.generate_content(
-            model='gemini-2.5-flash',
+            model="gemini-2.5-flash",
             contents=prompt
         )
         t = response.text.strip().upper()
-        if "NL2SQL" in t: return "NL2SQL"
-        if "SEARCH" in t: return "SEARCH"
-        if "PLAYWRIGHT" in t: return "PLAYWRIGHT"
+        if "NL2SQL" in t:
+            return "NL2SQL"
+        if "SEARCH" in t:
+            return "SEARCH"
+        if "PLAYWRIGHT" in t:
+            return "PLAYWRIGHT"
         return "CHAT"
     except Exception:
-        return "CHAT"  # Safe fallback
+        return "CHAT"
 
 def handle_chat_mode(question: str):
     api_key = os.getenv("GEMINI_API_KEY")
     client = genai.Client(api_key=api_key)
     response = client.models.generate_content(
-        model='gemini-2.5-flash',
+        model="gemini-2.5-flash",
         contents=question
     )
     return {
@@ -64,19 +67,27 @@ def handle_chat_mode(question: str):
 @cached(ttl=21600)
 def route_query_impl(question: str):
     mode = classify_intent(question)
-    
+
     if mode == "NL2SQL":
-        # Call the existing NL2SQL pipeline from the base codebase
         res = run_baseline_nl2sql(question)
         return {
             "mode": "NL2SQL",
+            "response_type": res.get("response_type"),
+            "question": res.get("question", question),
+            "selected_schema": res.get("selected_schema"),
+            "generated_sql": res.get("generated_sql"),
             "results": res.get("results", []),
-            "explanation": res.get("explanation", ""),
+            "execution_success": res.get("execution_success", False),
             "repaired": res.get("repaired", False),
             "repaired_sql": res.get("repaired_sql"),
-            "audit_trail": res.get("audit_trail")
+            "explanation": res.get("explanation", ""),
+            "audit_trail": res.get("audit_trail"),
+            "error": res.get("error"),
+            "validation_errors": res.get("validation_errors"),
+            "repair_validation_errors": res.get("repair_validation_errors"),
+            "repair_error": res.get("repair_error"),
         }
-    
+
     elif mode == "SEARCH":
         search_res = perform_web_search(question)
         return {
@@ -84,9 +95,8 @@ def route_query_impl(question: str):
             "results": search_res,
             "explanation": "Answered via Web Search."
         }
-        
+
     elif mode == "PLAYWRIGHT":
-        # Extract URL trivially for the demo
         words = question.split()
         url = next((w for w in words if w.startswith("http")), None)
         if url:
@@ -97,12 +107,12 @@ def route_query_impl(question: str):
                 "explanation": f"Extracted data from {url}"
             }
         else:
-             return {
+            return {
                 "mode": "PLAYWRIGHT",
                 "results": "No valid URL found in question.",
                 "explanation": "Failed to extract."
-             }
-             
+            }
+
     else:
         return handle_chat_mode(question)
 
