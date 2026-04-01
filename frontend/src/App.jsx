@@ -20,160 +20,37 @@ const SUGGESTIONS = [
 ];
 
 function SchemaTag({ schema }) {
-  const colors = SCHEMA_COLORS[schema] || {
-    bg: "#1a1a2e",
-    accent: "#7f77dd",
-    badge: "#12122a",
-  };
+  const colors = SCHEMA_COLORS[schema] || { bg: "#1a1a2e", accent: "#7f77dd", badge: "#12122a" };
   return (
-    <span
-      style={{
-        display: "inline-flex",
-        alignItems: "center",
-        gap: 5,
-        padding: "2px 10px",
-        borderRadius: 99,
-        background: colors.badge,
-        border: `1px solid ${colors.accent}33`,
-        fontSize: 11,
-        fontWeight: 600,
-        letterSpacing: "0.08em",
-        color: colors.accent,
-        textTransform: "uppercase",
-        fontFamily: "'JetBrains Mono', 'Fira Code', monospace",
-      }}
-    >
-      <span
-        style={{
-          width: 6,
-          height: 6,
-          borderRadius: "50%",
-          background: colors.accent,
-          boxShadow: `0 0 6px ${colors.accent}`,
-          display: "inline-block",
-        }}
-      />
+    <span style={{
+      display: "inline-flex", alignItems: "center", gap: 5, padding: "2px 10px", borderRadius: 99,
+      background: colors.badge, border: `1px solid ${colors.accent}33`, fontSize: 11, fontWeight: 600,
+      letterSpacing: "0.08em", color: colors.accent, textTransform: "uppercase", fontFamily: "'JetBrains Mono', 'Fira Code', monospace",
+    }}>
+      <span style={{ width: 6, height: 6, borderRadius: "50%", background: colors.accent, boxShadow: `0 0 6px ${colors.accent}`, display: "inline-block" }} />
       {schema}
     </span>
   );
 }
 
-function StatusBadge({ success, repaired }) {
-  if (repaired)
-    return (
-      <span
-        style={{
-          padding: "2px 10px",
-          borderRadius: 99,
-          background: "#2d200d",
-          border: "1px solid #db9a4a33",
-          color: "#db9a4a",
-          fontSize: 11,
-          fontWeight: 600,
-          fontFamily: "monospace",
-          letterSpacing: "0.06em",
-        }}
-      >
-        ⚡ REPAIRED
-      </span>
-    );
-  if (success)
-    return (
-      <span
-        style={{
-          padding: "2px 10px",
-          borderRadius: 99,
-          background: "#0d2d20",
-          border: "1px solid #4adb8a33",
-          color: "#4adb8a",
-          fontSize: 11,
-          fontWeight: 600,
-          fontFamily: "monospace",
-          letterSpacing: "0.06em",
-        }}
-      >
-        ✓ SUCCESS
-      </span>
-    );
-  return (
-    <span
-      style={{
-        padding: "2px 10px",
-        borderRadius: 99,
-        background: "#2d0d0d",
-        border: "1px solid #e24b4a33",
-        color: "#e24b4a",
-        fontSize: 11,
-        fontWeight: 600,
-        fontFamily: "monospace",
-        letterSpacing: "0.06em",
-      }}
-    >
-      ✗ FAILED
-    </span>
-  );
-}
-
 function ResultsTable({ results }) {
-  if (!results || results.length === 0)
-    return (
-      <p style={{ color: "#888", fontSize: 13, margin: 0 }}>
-        No results returned.
-      </p>
-    );
+  if (!results || !Array.isArray(results) || results.length === 0) return <p style={{ color: "#888", fontSize: 13, margin: 0 }}>No results returned.</p>;
   const columns = Object.keys(results[0]);
   return (
     <div style={{ overflowX: "auto", borderRadius: 8 }}>
-      <table
-        style={{
-          width: "100%",
-          borderCollapse: "collapse",
-          fontSize: 13,
-          fontFamily: "'JetBrains Mono', monospace",
-        }}
-      >
+      <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13, fontFamily: "'JetBrains Mono', monospace" }}>
         <thead>
           <tr>
             {columns.map((col) => (
-              <th
-                key={col}
-                style={{
-                  padding: "8px 14px",
-                  textAlign: "left",
-                  fontWeight: 600,
-                  color: "#a0a8c0",
-                  fontSize: 11,
-                  letterSpacing: "0.08em",
-                  textTransform: "uppercase",
-                  borderBottom: "1px solid #2a2d3a",
-                  background: "#0e1017",
-                  whiteSpace: "nowrap",
-                }}
-              >
-                {col}
-              </th>
+              <th key={col} style={{ padding: "8px 14px", textAlign: "left", fontWeight: 600, color: "#a0a8c0", fontSize: 11, letterSpacing: "0.08em", textTransform: "uppercase", borderBottom: "1px solid #2a2d3a", background: "#0e1017", whiteSpace: "nowrap" }}>{col}</th>
             ))}
           </tr>
         </thead>
         <tbody>
           {results.map((row, i) => (
-            <tr
-              key={i}
-              style={{
-                background: i % 2 === 0 ? "#12151f" : "#0e1017",
-              }}
-            >
+            <tr key={i} style={{ background: i % 2 === 0 ? "#12151f" : "#0e1017" }}>
               {columns.map((col) => (
-                <td
-                  key={col}
-                  style={{
-                    padding: "7px 14px",
-                    color: "#c8d0e8",
-                    borderBottom: "1px solid #1e2230",
-                  }}
-                >
-                  {String(row[col] ?? "")}
-                </td>
+                <td key={col} style={{ padding: "7px 14px", color: "#c8d0e8", borderBottom: "1px solid #1e2230" }}>{String(row[col] ?? "")}</td>
               ))}
             </tr>
           ))}
@@ -183,318 +60,19 @@ function ResultsTable({ results }) {
   );
 }
 
-function OriginalSQLCollapsible({ sql, error }) {
-  const [open, setOpen] = useState(false);
-  return (
-    <div style={{ border: "1px solid #3a1010", borderRadius: 10, overflow: "hidden" }}>
-      <button onClick={() => setOpen(v => !v)} style={{
-        width: "100%", padding: "10px 14px", background: "#120808",
-        border: "none", display: "flex", alignItems: "center",
-        justifyContent: "space-between", cursor: "pointer",
-        color: "#e24b4a", fontSize: 11, fontFamily: "'JetBrains Mono', monospace",
-        letterSpacing: "0.06em", fontWeight: 600,
-      }}>
-        <span>✗ ORIGINAL SQL (failed)</span>
-        <span style={{ fontSize: 10, color: "#4a2a2a" }}>{open ? "▲ collapse" : "▼ expand"}</span>
-      </button>
-      {open && (
-        <div style={{ padding: 12, background: "#0a0404", borderTop: "1px solid #2a1010" }}>
-          {error && (
-            <div style={{
-              marginBottom: 10, padding: "8px 12px",
-              background: "#1a0808", border: "1px solid #3a1010",
-              borderRadius: 7, fontSize: 12, color: "#e24b4a",
-              fontFamily: "monospace", lineHeight: 1.5,
-            }}>
-              <span style={{ fontWeight: 600, letterSpacing: "0.06em" }}>ERROR: </span>{error}
-            </div>
-          )}
-          <SQLBlock sql={sql} />
-        </div>
-      )}
-    </div>
-  );
-}
-
-function SQLBlock({ sql }) {
-  const [copied, setCopied] = useState(false);
-  const handleCopy = () => {
-    navigator.clipboard.writeText(sql);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 1500);
-  };
-  const keywords =
-    /\b(SELECT|FROM|WHERE|GROUP BY|ORDER BY|JOIN|LEFT|RIGHT|INNER|ON|AS|COUNT|SUM|AVG|MAX|MIN|HAVING|LIMIT|DISTINCT|AND|OR|NOT|IN|IS|NULL|DESC|ASC|INSERT|UPDATE|DELETE|CREATE|DROP|ALTER|WITH|UNION|INTERSECT|EXCEPT|CASE|WHEN|THEN|ELSE|END|BY)\b/g;
-  const highlighted = sql
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(keywords, '<span style="color:#7f77dd;font-weight:600">$1</span>')
-    .replace(
-      /(\w+\.\w+)/g,
-      '<span style="color:#4a9eff">$1</span>'
-    )
-    .replace(
-      /(--[^\n]*)/g,
-      '<span style="color:#4a5a6a;font-style:italic">$1</span>'
-    );
-
-  return (
-    <div style={{ position: "relative" }}>
-      <button
-        onClick={handleCopy}
-        style={{
-          position: "absolute",
-          top: 10,
-          right: 10,
-          background: copied ? "#0d2d20" : "#1e2230",
-          border: `1px solid ${copied ? "#4adb8a44" : "#2a2d3a"}`,
-          color: copied ? "#4adb8a" : "#888",
-          borderRadius: 6,
-          padding: "3px 10px",
-          fontSize: 11,
-          cursor: "pointer",
-          fontFamily: "monospace",
-          letterSpacing: "0.05em",
-          zIndex: 1,
-        }}
-      >
-        {copied ? "✓ copied" : "copy"}
-      </button>
-      <pre
-        style={{
-          margin: 0,
-          padding: "16px 14px",
-          background: "#080b12",
-          borderRadius: 8,
-          border: "1px solid #1e2230",
-          overflowX: "auto",
-          fontSize: 13,
-          lineHeight: 1.7,
-          color: "#c8d0e8",
-          fontFamily: "'JetBrains Mono', 'Fira Code', 'Courier New', monospace",
-        }}
-        dangerouslySetInnerHTML={{ __html: highlighted }}
-      />
-    </div>
-  );
-}
-
-function AuditTrail({ audit }) {
-  const [open, setOpen] = useState(false);
-  return (
-    <div
-      style={{
-        border: "1px solid #1e2230",
-        borderRadius: 10,
-        overflow: "hidden",
-      }}
-    >
-      <button
-        onClick={() => setOpen((v) => !v)}
-        style={{
-          width: "100%",
-          padding: "12px 16px",
-          background: "#0e1017",
-          border: "none",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          cursor: "pointer",
-          color: "#a0a8c0",
-          fontSize: 13,
-          fontFamily: "'JetBrains Mono', monospace",
-          letterSpacing: "0.04em",
-        }}
-      >
-        <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <span style={{ color: "#7f77dd", fontSize: 12 }}>▣</span>
-          AUDIT TRAIL
-        </span>
-        <span style={{ fontSize: 10, color: "#4a5a7a" }}>
-          {open ? "▲ collapse" : "▼ expand"}
-        </span>
-      </button>
-      {open && (
-        <div
-          style={{
-            padding: 16,
-            background: "#080b12",
-            borderTop: "1px solid #1e2230",
-            display: "flex",
-            flexDirection: "column",
-            gap: 14,
-          }}
-        >
-          {[
-            { label: "Initial SQL", value: audit.initial_sql, type: "sql", highlight: true },
-            { label: "Initial Error", value: audit.initial_error || "none", type: "text", highlight: !!audit.initial_error },
-            { label: "Initial Validation", value: audit.initial_validation, type: "json", highlight: false },
-            { label: "Repair Attempted", value: String(audit.repair_attempted), type: "text", highlight: false },
-            audit.repaired_sql &&
-            { label: "Repaired SQL", value: audit.repaired_sql, type: "sql", highlight: true },
-            audit.repaired_validation &&
-            { label: "Repaired Validation", value: audit.repaired_validation, type: "json", highlight: false },
-            { label: "Execution Outcome", value: audit.execution_outcome, type: "text", highlight: true },
-          ]
-            .filter(Boolean)
-            .map(({ label, value, type, highlight }) => (
-              <div key={label}>
-                <p
-                  style={{
-                    margin: "0 0 6px",
-                    fontSize: 10,
-                    color: highlight ? "#db9a4a" : "#4a5a7a",  // ← highlight used here
-                    letterSpacing: "0.1em",
-                    textTransform: "uppercase",
-                    fontFamily: "monospace",
-                    fontWeight: 600,
-                  }}
-                >
-                  {label}
-                </p>
-                {type === "sql" ? (
-                  <SQLBlock sql={value} />
-                ) : type === "json" ? (
-                  <pre
-                    style={{
-                      margin: 0,
-                      padding: 12,
-                      background: "#0a0d16",
-                      borderRadius: 8,
-                      border: "1px solid #1a1e2a",
-                      fontSize: 12,
-                      color: "#a0c8a0",
-                      fontFamily: "monospace",
-                      lineHeight: 1.6,
-                      overflowX: "auto",
-                    }}
-                  >
-                    {JSON.stringify(value, null, 2)}
-                  </pre>
-                ) : (
-                  <span
-                    style={{
-                      display: "inline-block",
-                      padding: "3px 10px",
-                      background: "#0e1017",
-                      border: "1px solid #1e2230",
-                      borderRadius: 6,
-                      fontSize: 12,
-                      color:
-                        value === "success"
-                          ? "#4adb8a"
-                          : value === "none"
-                            ? "#4a5a7a"
-                            : "#c8d0e8",
-                      fontFamily: "monospace",
-                    }}
-                  >
-                    {value}
-                  </span>
-                )}
-              </div>
-            ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
-function RepairSummaryStrip() {
-  const steps = [
-    { icon: "✗", label: "Original SQL failed", color: "#e24b4a", bg: "#1a0808", border: "#3a1010" },
-    { icon: "⚡", label: "Repair applied", color: "#db9a4a", bg: "#1a1008", border: "#3a2a10" },
-    { icon: "✓", label: "Execution succeeded", color: "#4adb8a", bg: "#081a10", border: "#103a20" },
-  ];
-  return (
-    <div style={{ display: "flex", gap: 6, marginBottom: 12, flexWrap: "wrap" }}>
-      {steps.map((s, i) => (
-        <span key={i} style={{
-          display: "inline-flex", alignItems: "center", gap: 6,
-          padding: "5px 12px", borderRadius: 8,
-          background: s.bg, border: `1px solid ${s.border}`,
-          fontSize: 11, fontWeight: 600, color: s.color,
-          fontFamily: "'JetBrains Mono', monospace", letterSpacing: "0.06em",
-        }}>
-          <span>{s.icon}</span> {s.label}
-          {i < 2 && <span style={{ color: "#2a3040", marginLeft: 4 }}>→</span>}
-        </span>
-      ))}
-    </div>
-  );
-}
-
 function AssistantTextReply({ data }) {
   const suggestions = data.suggestions || [];
-
   return (
-    <div
-      style={{
-        display: "flex",
-        gap: 12,
-        marginBottom: 28,
-        alignItems: "flex-start",
-      }}
-    >
-      <div
-        style={{
-          width: 34,
-          height: 34,
-          borderRadius: 10,
-          background: "linear-gradient(135deg, #1a1a3e, #2a1a50)",
-          border: "1px solid #3a3570",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          fontSize: 14,
-          color: "#9f97ef",
-          flexShrink: 0,
-        }}
-      >
-        ◈
-      </div>
-
+    <div style={{ display: "flex", gap: 12, marginBottom: 28, alignItems: "flex-start" }}>
+      <div style={{ width: 34, height: 34, borderRadius: 10, background: "linear-gradient(135deg, #1a1a3e, #2a1a50)", border: "1px solid #3a3570", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, color: "#9f97ef", flexShrink: 0 }}>◈</div>
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div
-          style={{
-            padding: "14px 18px",
-            background: "#0e1017",
-            border: "1px solid #1e2230",
-            borderRadius: "4px 18px 18px 18px",
-            color: "#c8d0e8",
-            fontSize: 14,
-            lineHeight: 1.7,
-            fontFamily: "'DM Sans', 'Segoe UI', sans-serif",
-          }}
-        >
+        <div style={{ padding: "14px 18px", background: "#0e1017", border: "1px solid #1e2230", borderRadius: "4px 18px 18px 18px", color: "#c8d0e8", fontSize: 14, lineHeight: 1.7, fontFamily: "'DM Sans', 'Segoe UI', sans-serif" }}>
           {data.assistant_message || data.explanation}
         </div>
-
         {suggestions.length > 0 && (
-          <div
-            style={{
-              marginTop: 12,
-              display: "flex",
-              flexWrap: "wrap",
-              gap: 8,
-            }}
-          >
+          <div style={{ marginTop: 12, display: "flex", flexWrap: "wrap", gap: 8 }}>
             {suggestions.map((item) => (
-              <span
-                key={item}
-                style={{
-                  padding: "7px 12px",
-                  borderRadius: 999,
-                  background: "#0a0d16",
-                  border: "1px solid #1e2230",
-                  color: "#8fa1c7",
-                  fontSize: 12,
-                  fontFamily: "monospace",
-                }}
-              >
-                {item}
-              </span>
+              <span key={item} style={{ padding: "7px 12px", borderRadius: 999, background: "#0a0d16", border: "1px solid #1e2230", color: "#8fa1c7", fontSize: 12, fontFamily: "monospace" }}>{item}</span>
             ))}
           </div>
         )}
@@ -507,26 +85,8 @@ function MessageBubble({ msg }) {
   const [activeTab, setActiveTab] = useState("results");
   if (msg.role === "user") {
     return (
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "flex-end",
-          marginBottom: 24,
-        }}
-      >
-        <div
-          style={{
-            maxWidth: "70%",
-            padding: "12px 18px",
-            background: "linear-gradient(135deg, #1a2050, #2a1a50)",
-            borderRadius: "18px 18px 4px 18px",
-            border: "1px solid #3a3570",
-            color: "#d8d0f0",
-            fontSize: 15,
-            lineHeight: 1.5,
-            fontFamily: "'DM Sans', 'Segoe UI', sans-serif",
-          }}
-        >
+      <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 24 }}>
+        <div style={{ maxWidth: "70%", padding: "12px 18px", background: "linear-gradient(135deg, #1a2050, #2a1a50)", borderRadius: "18px 18px 4px 18px", border: "1px solid #3a3570", color: "#d8d0f0", fontSize: 15, lineHeight: 1.5, fontFamily: "'DM Sans', 'Segoe UI', sans-serif" }}>
           {msg.content}
         </div>
       </div>
@@ -535,52 +95,11 @@ function MessageBubble({ msg }) {
 
   if (msg.loading) {
     return (
-      <div
-        style={{
-          display: "flex",
-          gap: 12,
-          marginBottom: 24,
-          alignItems: "flex-start",
-        }}
-      >
-        <div
-          style={{
-            width: 34,
-            height: 34,
-            borderRadius: 10,
-            background: "linear-gradient(135deg, #1a1a3e, #2a1a50)",
-            border: "1px solid #3a3570",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            fontSize: 14,
-            flexShrink: 0,
-          }}
-        >
-          ◈
-        </div>
-        <div
-          style={{
-            padding: "16px 20px",
-            background: "#0e1017",
-            borderRadius: "4px 18px 18px 18px",
-            border: "1px solid #1e2230",
-            display: "flex",
-            gap: 6,
-            alignItems: "center",
-          }}
-        >
+      <div style={{ display: "flex", gap: 12, marginBottom: 24, alignItems: "flex-start" }}>
+        <div style={{ width: 34, height: 34, borderRadius: 10, background: "linear-gradient(135deg, #1a1a3e, #2a1a50)", border: "1px solid #3a3570", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, flexShrink: 0 }}>◈</div>
+        <div style={{ padding: "16px 20px", background: "#0e1017", borderRadius: "4px 18px 18px 18px", border: "1px solid #1e2230", display: "flex", gap: 6, alignItems: "center" }}>
           {[0, 1, 2].map((i) => (
-            <div
-              key={i}
-              style={{
-                width: 7,
-                height: 7,
-                borderRadius: "50%",
-                background: "#7f77dd",
-                animation: `pulse 1.2s ${i * 0.2}s ease-in-out infinite`,
-              }}
-            />
+            <div key={i} style={{ width: 7, height: 7, borderRadius: "50%", background: "#7f77dd", animation: `pulse 1.2s ${i * 0.2}s ease-in-out infinite` }} />
           ))}
         </div>
       </div>
@@ -588,193 +107,123 @@ function MessageBubble({ msg }) {
   }
 
   const { data } = msg;
-  const isTextOnlyReply =
-    data?.response_type &&
-    data.response_type !== "analytic_query";
+
+  // Use AssistantTextReply if it's explicitly marked or if results is just a string (e.g. error msg)
+  const isTextOnlyReply = 
+      (data?.response_type && data.response_type !== "analytic_query") ||
+      (typeof data?.results === 'string');
 
   if (isTextOnlyReply) {
-    return <AssistantTextReply data={data} />;
+    // Pack the string results so AssistantTextReply can display it
+    const textData = {
+        assistant_message: typeof data.results === 'string' ? data.results : data.assistant_message,
+        explanation: data.explanation
+    };
+    return <AssistantTextReply data={textData} />;
   }
+
   const tabs = [
     { id: "results", label: `Results (${(data.results || []).length})` },
-    { id: "chart", label: "Chart" },
-    { id: "sql", label: "SQL" },
-    { id: "audit", label: "Audit Trail" },
+    { id: "chart", label: "Chart" }
   ];
 
   return (
-    <div
-      style={{
-        display: "flex",
-        gap: 12,
-        marginBottom: 28,
-        alignItems: "flex-start",
-      }}
-    >
-      <div
-        style={{
-          width: 34,
-          height: 34,
-          borderRadius: 10,
-          background: "linear-gradient(135deg, #1a1a3e, #2a1a50)",
-          border: "1px solid #3a3570",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          fontSize: 14,
-          color: "#9f97ef",
-          flexShrink: 0,
-        }}
-      >
-        ◈
-      </div>
+    <div style={{ display: "flex", gap: 12, marginBottom: 28, alignItems: "flex-start" }}>
+      <div style={{ width: 34, height: 34, borderRadius: 10, background: "linear-gradient(135deg, #1a1a3e, #2a1a50)", border: "1px solid #3a3570", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, color: "#9f97ef", flexShrink: 0 }}>◈</div>
       <div style={{ flex: 1, minWidth: 0 }}>
-        {/* Meta bar */}
-        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10, flexWrap: "wrap" }}>
-          <SchemaTag schema={data.selected_schema} />
-          <StatusBadge success={data.execution_success} repaired={data.repaired} />
-        </div>
-        {data.repaired && <RepairSummaryStrip />}
-
-        {/* Explanation */}
-        <div
-          style={{
-            padding: "14px 18px",
-            background: "#0e1017",
-            border: "1px solid #1e2230",
-            borderRadius: 12,
-            marginBottom: 12,
-            color: "#c8d0e8",
-            fontSize: 14,
-            lineHeight: 1.7,
-            fontFamily: "'DM Sans', 'Segoe UI', sans-serif",
-          }}
-        >
-          {data.repaired && (
-            <span style={{
-              display: "inline-block", marginBottom: 6,
-              fontSize: 12, color: "#db9a4a", fontFamily: "monospace",
-              fontWeight: 600, letterSpacing: "0.04em",
-            }}>
-              ⚡ Original SQL failed — auto-repaired before execution.{" "}
-            </span>
-          )}
+        {data.selected_schema && (
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10, flexWrap: "wrap" }}>
+            <SchemaTag schema={data.selected_schema} />
+          </div>
+        )}
+        <div style={{ padding: "14px 18px", background: "#0e1017", border: "1px solid #1e2230", borderRadius: 12, marginBottom: 12, color: "#c8d0e8", fontSize: 14, lineHeight: 1.7, fontFamily: "'DM Sans', 'Segoe UI', sans-serif" }}>
           {data.explanation}
         </div>
-
-        {/* Tabs */}
-        <div
-          style={{
-            background: "#080b12",
-            border: "1px solid #1e2230",
-            borderRadius: 12,
-            overflow: "hidden",
-          }}
-        >
-          <div
-            style={{
-              display: "flex",
-              borderBottom: "1px solid #1e2230",
-              background: "#0a0d16",
-            }}
-          >
-            {tabs.map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                style={{
-                  padding: "10px 16px",
-                  background: "none",
-                  border: "none",
-                  borderBottom:
-                    activeTab === tab.id
-                      ? "2px solid #7f77dd"
-                      : "2px solid transparent",
-                  color:
-                    activeTab === tab.id ? "#c8d0e8" : "#4a5a7a",
-                  cursor: "pointer",
-                  fontSize: 12,
-                  fontWeight: 600,
-                  fontFamily: "monospace",
-                  letterSpacing: "0.05em",
-                  transition: "color 0.15s",
-                }}
-              >
-                {tab.label}
-              </button>
-            ))}
-          </div>
-          <div style={{ padding: 14 }}>
-            {activeTab === "results" && (
-              <ResultsTable results={data.results} />
-            )}
-            {activeTab === "chart" && (
-              <ResultChart results={data.results} />
-            )}
-            {activeTab === "sql" && (
-              data.repaired ? (
-                <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-                  <div>
-                    <p style={{
-                      margin: "0 0 6px",
-                      fontSize: 10,
-                      color: "#e24b4a",
-                      fontFamily: "monospace",
-                      fontWeight: 600,
-                      letterSpacing: "0.08em",
-                      textTransform: "uppercase",
-                    }}>
-                      ✗ Original SQL (failed)
-                    </p>
-                    <SQLBlock sql={data.audit_trail?.initial_sql || data.generated_sql} />
-                  </div>
-                  <div>
-                    <p style={{
-                      margin: "0 0 6px",
-                      fontSize: 10,
-                      color: "#4adb8a",
-                      fontFamily: "monospace",
-                      fontWeight: 600,
-                      letterSpacing: "0.08em",
-                      textTransform: "uppercase",
-                    }}>
-                      ✓ Repaired SQL (executed)
-                    </p>
-                    <SQLBlock sql={data.repaired_sql} />
-                  </div>
-                </div>
-              ) : (
-                <SQLBlock sql={data.generated_sql} />
-              )
-            )}
-            {activeTab === "audit" && (
-              <AuditTrail audit={data.audit_trail} />
-            )}
-
-          </div>
-        </div>
+        
+        {(Array.isArray(data.results) && data.results.length > 0) && (
+            <div style={{ background: "#080b12", border: "1px solid #1e2230", borderRadius: 12, overflow: "hidden" }}>
+            <div style={{ display: "flex", borderBottom: "1px solid #1e2230", background: "#0a0d16" }}>
+                {tabs.map((tab) => (
+                <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id)}
+                    style={{ padding: "10px 16px", background: "none", border: "none", borderBottom: activeTab === tab.id ? "2px solid #7f77dd" : "2px solid transparent", color: activeTab === tab.id ? "#c8d0e8" : "#4a5a7a", cursor: "pointer", fontSize: 12, fontWeight: 600, fontFamily: "monospace", letterSpacing: "0.05em", transition: "color 0.15s" }}
+                >
+                    {tab.label}
+                </button>
+                ))}
+            </div>
+            <div style={{ padding: 14 }}>
+                {activeTab === "results" && <ResultsTable results={data.results} />}
+                {activeTab === "chart" && <ResultChart results={data.results} />}
+            </div>
+            </div>
+        )}
       </div>
     </div>
   );
 }
 
 export default function App() {
-  const { user, logout } = useAuth();
+  const { user, token, logout } = useAuth();
   const navigate = useNavigate();
+  const [conversations, setConversations] = useState([]);
+  const [currentConversationId, setCurrentConversationId] = useState(null);
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const [sidebarSearch, setSidebarSearch] = useState("");
   const bottomRef = useRef(null);
   const inputRef = useRef(null);
+
+  useEffect(() => {
+    if (token) fetchConversations();
+  }, [token]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
+  const fetchConversations = async () => {
+    try {
+      const res = await fetch(`${API_BASE}/chat/conversations`, {
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      if (res.ok) setConversations(await res.json());
+    } catch (err) { console.error("Failed to load conversations"); }
+  };
+
+  const loadConversation = async (id) => {
+    if (loading) return;
+    try {
+      setLoading(true);
+      setCurrentConversationId(id);
+      const res = await fetch(`${API_BASE}/chat/conversations/${id}`, {
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        const mapped = [];
+        data.messages.forEach(m => {
+          if (m.role === 'user') {
+            mapped.push({ role: 'user', content: m.content, id: m.message_id });
+          } else {
+            mapped.push({ role: 'assistant', data: m.response_json, id: m.message_id });
+          }
+        });
+        setMessages(mapped);
+      }
+    } catch (e) { console.error("Failed to load history"); }
+    finally { setLoading(false); }
+  };
+
+  const newChat = () => {
+    setCurrentConversationId(null);
+    setMessages([]);
+  };
+
   const sendQuery = async (question) => {
     if (!question.trim() || loading) return;
-    setError(null);
     const userMsg = { role: "user", content: question, id: Date.now() };
     const loadingMsg = { role: "assistant", loading: true, id: Date.now() + 1 };
     setMessages((m) => [...m, userMsg, loadingMsg]);
@@ -782,57 +231,49 @@ export default function App() {
     setLoading(true);
 
     try {
+      let convId = currentConversationId;
+      if (!convId && token) {
+        // Create conversation
+        const res = await fetch(`${API_BASE}/chat/conversations`, {
+            method: "POST", 
+            headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+            body: JSON.stringify({ title: "New Chat" })
+        });
+        if (res.ok) {
+            const data = await res.json();
+            convId = data.conversation_id;
+            setCurrentConversationId(convId);
+        }
+      }
+
+      const reqBody = { question };
+      if (convId) reqBody.conversation_id = convId;
+
       const res = await fetch(`${API_BASE}/chat/query`, {
         method: "POST",
         headers: { 
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${localStorage.getItem('access_token')}`
+          ...(token && { "Authorization": `Bearer ${token}` })
         },
-        body: JSON.stringify({ question }),
+        body: JSON.stringify(reqBody),
       });
+      
       if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
       const data = await res.json();
       setMessages((m) => [
         ...m.filter((msg) => !msg.loading),
         { role: "assistant", data, id: Date.now() + 2 },
       ]);
+      
+      if (token) fetchConversations(); // refresh list to show newly titled chat
+
     } catch (err) {
       setMessages((m) => m.filter((msg) => !msg.loading));
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const runRepairDemo = async () => {
-    if (loading) return;
-    setError(null);
-    const demoLabel = "⚡ Repair Demo: Which products are currently low in stock?";
-    const userMsg = { role: "user", content: demoLabel, id: Date.now() };
-    const loadingMsg = { role: "assistant", loading: true, id: Date.now() + 1 };
-    setMessages((m) => [...m, userMsg, loadingMsg]);
-    setLoading(true);
-
-    try {
-      const res = await fetch(`${API_BASE}/nl2sql/test-repair`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          question: "Which products are currently low in stock?",
-          schema_name: "inventory",
-          bad_sql:
-            "SELECT product_name FROM products JOIN stock ON products.product_id = stock.product_id WHERE stock.quantity_available < stock.reorder_level;",
-        }),
-      });
-      if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
-      const data = await res.json();
-      setMessages((m) => [
-        ...m.filter((msg) => !msg.loading),
-        { role: "assistant", data, id: Date.now() + 2 },
-      ]);
-    } catch (err) {
-      setMessages((m) => m.filter((msg) => !msg.loading));
-      setError(err.message);
+      setMessages(m => [...m, { 
+          role: "assistant", 
+          data: { explanation: "System Error: The orchestrator encountered an unexpected error processing your request." }, 
+          id: Date.now() + 2 
+      }]);
     } finally {
       setLoading(false);
     }
@@ -849,115 +290,84 @@ export default function App() {
 
   return (
     <div style={{ display: "flex", height: "100vh", background: "#060810", color: "#c8d0e8", fontFamily: "'Inter', sans-serif" }}>
-      <div style={{ width: 260, background: "#0e1017", borderRight: "1px solid #1e2230", display: "flex", flexDirection: "column" }}>
+      {/* ── SIDEBAR ── */}
+      <div style={{ width: 260, background: "#0e1017", borderRight: "1px solid #1e2230", display: "flex", flexDirection: "column", flexShrink: 0 }}>
         <div style={{ padding: "24px 20px" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 30 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 20 }}>
             <div style={{ width: 32, height: 32, borderRadius: 8, background: "linear-gradient(135deg, #4adb8a, #4a9eff)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: "bold", fontSize: 16 }}>◈</div>
-            <h1 style={{ margin: 0, fontSize: 16, color: "#fff", letterSpacing: "0.02em" }}>NL2SQL Copilot</h1>
+            <h1 style={{ margin: 0, fontSize: 16, color: "#fff", letterSpacing: "0.02em" }}>Copilot</h1>
           </div>
-          <div style={{ padding: "16px", borderRadius: "12px", background: "#12151f", border: "1px solid #1e2230", marginBottom: 20 }}>
-            <p style={{ margin: "0 0 4px 0", fontSize: 14, color: "#fff", fontWeight: 500 }}>{user?.name || "Guest User"}</p>
-            <p style={{ margin: 0, fontSize: 12, color: "#8fa1c7", fontFamily: "monospace" }}>Role: {user?.role || "guest"}</p>
-          </div>
-          <nav style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-            <button style={{ padding: "10px 14px", background: "#1a1e2a", color: "#fff", border: "none", borderRadius: 8, textAlign: "left", cursor: "pointer", fontSize: 14, fontWeight: 500 }}>Chat & Analytics</button>
-            {(user?.role === "admin" || user?.role === "super_admin") && (
-              <button onClick={() => navigate("/admin")} style={{ padding: "10px 14px", background: "transparent", color: "#8fa1c7", border: "none", borderRadius: 8, textAlign: "left", cursor: "pointer", fontSize: 14, fontWeight: 500 }}>Admin Dashboard</button>
-            )}
-          </nav>
+          <button onClick={newChat} style={{ width: "100%", padding: "10px 14px", background: "linear-gradient(135deg, #3a2a80, #5a3ab0)", color: "#fff", border: "1px solid #5a40c0", borderRadius: 8, textAlign: "left", cursor: "pointer", fontSize: 14, fontWeight: 600, display: "flex", alignItems: "center", gap: 8, marginBottom: 20 }}>
+            <span>+</span> New Chat
+          </button>
+          
+          <input 
+            type="text" value={sidebarSearch} onChange={e => setSidebarSearch(e.target.value)}
+            placeholder="Search chats..."
+            style={{ width: "100%", padding: "8px 12px", borderRadius: 6, background: "#0b0c13", border: "1px solid #1e2230", color: "#8fa1c7", fontSize: 13, outline: "none", marginBottom: 12 }}
+          />
         </div>
-        <div style={{ marginTop: "auto", padding: 20 }}>
-          {user && user.role !== "guest" ? (
-            <button onClick={() => { logout(); navigate("/login"); }} style={{ width: "100%", padding: "10px", background: "#1a1008", border: "1px solid #3a1010", color: "#e24b4a", borderRadius: 8, cursor: "pointer", fontWeight: 600, fontSize: 14 }}>Sign Out</button>
-          ) : (
-            <button onClick={() => { logout(); navigate("/login"); }} style={{ width: "100%", padding: "10px", background: "#0e1810", border: "1px solid #102a15", color: "#4adb8a", borderRadius: 8, cursor: "pointer", fontWeight: 600, fontSize: 14 }}>Sign Up / Log In</button>
-          )}
+        
+        <div style={{ flex: 1, overflowY: "auto", padding: "0 10px", display: "flex", flexDirection: "column", gap: 4 }}>
+            {conversations
+              .filter(c => c.title?.toLowerCase().includes(sidebarSearch.toLowerCase()))
+              .map(c => (
+                <button 
+                  key={c.conversation_id}
+                  onClick={() => loadConversation(c.conversation_id)}
+                  style={{
+                    padding: "10px 14px", background: currentConversationId === c.conversation_id ? "#1a1e2a" : "transparent", color: currentConversationId === c.conversation_id ? "#fff" : "#8fa1c7",
+                    border: "none", borderRadius: 8, textAlign: "left", cursor: "pointer", fontSize: 13,
+                    whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", transition: "background 0.15s"
+                  }}
+                  title={c.title}
+                >
+                  {c.title}
+                </button>
+            ))}
+        </div>
+
+        <div style={{ padding: "16px 20px", borderTop: "1px solid #1e2230" }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#12151f', padding: '8px 12px', borderRadius: 8, border: '1px solid #1e2230', marginBottom: 8}}>
+               <div style={{width:24,height:24,borderRadius:'50%',background:'#3d4b6c',display:'flex',alignItems:'center',justifyContent:'center',fontSize:10,color:'#fff'}}>{(user?.name||"G").substring(0,1)}</div>
+               <div style={{overflow:'hidden'}}>
+                 <p style={{margin:0,fontSize:12,color:'#fff',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{user?.name||"Guest"}</p>
+                 <p style={{margin:0,fontSize:10,color:'#8fa1c7'}}>{user?.role||""}</p>
+               </div>
+            </div>
+            {(user?.role === "admin" || user?.role === "super_admin") && (
+              <button onClick={() => navigate("/admin")} style={{ width: "100%", padding: "10px 14px", background: "transparent", color: "#8fa1c7", border: "none", borderRadius: 8, textAlign: "left", cursor: "pointer", fontSize: 13, fontWeight: 500, display:'flex', alignItems: 'center', gap: 6 }}>⚙️ Admin Dashboard</button>
+            )}
+            {user && user.role !== "guest" ? (
+              <button onClick={() => { logout(); navigate("/login"); }} style={{ width: "100%", padding: "10px 14px", background: "#1a1008", border: "1px solid #3a1010", color: "#e24b4a", borderRadius: 8, cursor: "pointer", fontWeight: 600, fontSize: 13, textAlign: 'left' }}>Sign Out</button>
+            ) : (
+              <button onClick={() => { logout(); navigate("/login"); }} style={{ width: "100%", padding: "10px 14px", background: "#0e1810", border: "1px solid #102a15", color: "#4adb8a", borderRadius: 8, cursor: "pointer", fontWeight: 600, fontSize: 13, textAlign: 'left' }}>Sign Up / Log In</button>
+            )}
+          </div>
         </div>
       </div>
-      <div style={{ flex: 1, position: "relative", display: "flex", flexDirection: "column" }}>
+
+      {/* ── MAIN PANE ── */}
+      <div style={{ flex: 1, position: "relative", display: "flex", flexDirection: "column", borderLeft: "1px solid #1e2230" }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;600&family=Inter:wght@400;500;600&display=swap');
         * { box-sizing: border-box; margin: 0; padding: 0; }
         ::-webkit-scrollbar { width: 6px; height: 6px; }
-        @keyframes pulse {
-          0%, 100% { opacity: 0.3; transform: scale(0.8); }
-          50% { opacity: 1; transform: scale(1.1); }
-        }
-        @keyframes fadeSlideUp {
-          from { opacity: 0; transform: translateY(10px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        @keyframes pulse { 0%, 100% { opacity: 0.3; transform: scale(0.8); } 50% { opacity: 1; transform: scale(1.1); } }
+        @keyframes fadeSlideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         ::-webkit-scrollbar-track { background: #080b12; }
         ::-webkit-scrollbar-thumb { background: #1e2230; border-radius: 3px; }
         ::-webkit-scrollbar-thumb:hover { background: #2a2d3a; }
       `}</style>
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          height: "100vh",
-          background: "#060810",
-          fontFamily: "'DM Sans', 'Segoe UI', sans-serif",
-          color: "#c8d0e8",
-        }}
-      >
+
         {/* Header */}
-        <div
-          style={{
-            padding: "14px 24px",
-            background: "#080b12",
-            borderBottom: "1px solid #1a1d2a",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            flexShrink: 0,
-          }}
-        >
+        <div style={{ padding: "14px 24px", background: "#080b12", borderBottom: "1px solid #1a1d2a", display: "flex", alignItems: "center", justifyContent: "space-between", flexShrink: 0 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <div
-              style={{
-                width: 32,
-                height: 32,
-                borderRadius: 9,
-                background: "linear-gradient(135deg, #1a1a3e, #2a1060)",
-                border: "1px solid #3a2a80",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                color: "#9f97ef",
-                fontSize: 18,
-              }}
-            >
-              ◈
-            </div>
             <div>
-              <p
-                style={{
-                  fontSize: 18,
-                  fontWeight: 600,
-                  color: "#d0c8f0",
-                  letterSpacing: "-0.01em",
-                }}
-              >
-                NL2SQL Analytics Copilot
-              </p>
-              <p
-                style={{
-                  fontSize: 12,
-                  color: "#aea9a9",
-                  letterSpacing: "0.08em",
-                  fontFamily: "monospace",
-                }}
-              >
-                ENTERPRISE · MULTI-AGENT
-              </p>
+              <p style={{ fontSize: 18, fontWeight: 600, color: "#d0c8f0", letterSpacing: "-0.01em" }}>NL2SQL Analytics Copilot</p>
+              <p style={{ fontSize: 12, color: "#aea9a9", letterSpacing: "0.08em", fontFamily: "monospace" }}>ENTERPRISE · SECURE WORKSPACE</p>
             </div>
-          </div>
-          <div style={{ display: "flex", gap: 8 }}>
-            {["sales", "inventory", "customer", "support"].map((s) => (
-              <SchemaTag key={s} schema={s} />
-            ))}
           </div>
         </div>
 
@@ -965,279 +375,55 @@ export default function App() {
         <div style={{ flex: 1, overflowY: "auto", padding: "0 16px" }}>
           <div style={{ maxWidth: 860, margin: "0 auto", padding: "24px 0" }}>
             {isEmpty && (
-              <div
-                style={{
-                  textAlign: "center",
-                  padding: "60px 0 40px",
-                  animation: "fadeSlideUp 0.5s ease",
-                }}
-              >
-                <div
-                  style={{
-                    width: 64,
-                    height: 64,
-                    margin: "0 auto 24px",
-                    borderRadius: 18,
-                    background: "linear-gradient(135deg, #12122e, #220e40)",
-                    border: "1px solid #3a2a70",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    fontSize: 28,
-                    color: "#9f97ef",
-                  }}
-                >
-                  ◈
-                </div>
-                <h1
-                  style={{
-                    fontSize: 28,
-                    fontWeight: 600,
-                    color: "#d0c8f0",
-                    marginBottom: 8,
-                    letterSpacing: "-0.02em",
-                  }}
-                >
-                  Ask anything about your data
-                </h1>
-                <p
-                  style={{
-                    fontSize: 16,
-                    color: "#4a5a7a",
-                    marginBottom: 36,
-                    lineHeight: 1.6,
-                  }}
-                >
-                  Natural language → SQL → Insights. Powered by multi-agent
-                  pipeline.
-                </p>
-                <div
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: "repeat(2, 1fr)",
-                    gap: 10,
-                    maxWidth: 600,
-                    margin: "0 auto",
-                  }}
-                >
+              <div style={{ textAlign: "center", padding: "60px 0 40px", animation: "fadeSlideUp 0.5s ease" }}>
+                <div style={{ width: 64, height: 64, margin: "0 auto 24px", borderRadius: 18, background: "linear-gradient(135deg, #12122e, #220e40)", border: "1px solid #3a2a70", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 28, color: "#9f97ef" }}>◈</div>
+                <h1 style={{ fontSize: 28, fontWeight: 600, color: "#d0c8f0", marginBottom: 8, letterSpacing: "-0.02em" }}>Ask anything about your data</h1>
+                <p style={{ fontSize: 16, color: "#4a5a7a", marginBottom: 36, lineHeight: 1.6 }}>Natural language → Protected SQL → Insights.</p>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 10, maxWidth: 600, margin: "0 auto" }}>
                   {SUGGESTIONS.map((s) => (
-                    <button
-                      key={s}
-                      onClick={() => sendQuery(s)}
-                      style={{
-                        padding: "12px 16px",
-                        background: "#0a0d16",
-                        border: "1px solid #1e2230",
-                        borderRadius: 10,
-                        color: "#8090b0",
-                        fontSize: 14,
-                        cursor: "pointer",
-                        textAlign: "left",
-                        lineHeight: 1.4,
-                        transition: "all 0.15s",
-                        fontFamily: "inherit",
-                      }}
-                      onMouseEnter={(e) => {
-                        e.target.style.background = "#0e1117";
-                        e.target.style.borderColor = "#2a2d40";
-                        e.target.style.color = "#c0c8e0";
-                      }}
-                      onMouseLeave={(e) => {
-                        e.target.style.background = "#0a0d16";
-                        e.target.style.borderColor = "#1e2230";
-                        e.target.style.color = "#8090b0";
-                      }}
-                    >
-                      {s}
-                    </button>
+                    <button key={s} onClick={() => sendQuery(s)}
+                      style={{ padding: "12px 16px", background: "#0a0d16", border: "1px solid #1e2230", borderRadius: 10, color: "#8090b0", fontSize: 14, cursor: "pointer", textAlign: "left", lineHeight: 1.4, transition: "all 0.15s", fontFamily: "inherit" }}
+                      onMouseEnter={(e) => { e.target.style.background = "#0e1117"; e.target.style.borderColor = "#2a2d40"; e.target.style.color = "#c0c8e0"; }}
+                      onMouseLeave={(e) => { e.target.style.background = "#0a0d16"; e.target.style.borderColor = "#1e2230"; e.target.style.color = "#8090b0"; }}
+                    >{s}</button>
                   ))}
                 </div>
               </div>
             )}
 
             {messages.map((msg) => (
-              <div
-                key={msg.id}
-                style={{ animation: "fadeSlideUp 0.3s ease" }}
-              >
+              <div key={msg.id} style={{ animation: "fadeSlideUp 0.3s ease" }}>
                 <MessageBubble msg={msg} />
               </div>
             ))}
-
-            {error && (
-              <div
-                style={{
-                  padding: "12px 16px",
-                  background: "#1a0808",
-                  border: "1px solid #3a1010",
-                  borderRadius: 10,
-                  color: "#e24b4a",
-                  fontSize: 13,
-                  marginBottom: 20,
-                  fontFamily: "monospace",
-                  animation: "fadeSlideUp 0.3s ease",
-                }}
-              >
-                ✗ {error}
-              </div>
-            )}
 
             <div ref={bottomRef} />
           </div>
         </div>
 
         {/* Input bar */}
-        <div
-          style={{
-            padding: "16px 24px 20px",
-            background: "#080b12",
-            borderTop: "1px solid #1a1d2a",
-            flexShrink: 0,
-          }}
-        >
-          <div
-            style={{
-              maxWidth: 860,
-              margin: "0 auto",
-              display: "flex",
-              gap: 10,
-              alignItems: "flex-end",
-            }}
-          >
-            {/* ADD THIS BUTTON */}
-            <button
-              onClick={runRepairDemo}
-              disabled={loading}
-              title="Run a controlled repair demo using a known-bad SQL query"
-              style={{
-                height: 44,
-                padding: "0 14px",
-                borderRadius: 12,
-                background: "#0d2010",
-                border: "1px solid #1a4a2a",
-                color: loading ? "#2a4a3a" : "#4adb8a",
-                cursor: loading ? "not-allowed" : "pointer",
-                fontSize: 11,
-                fontWeight: 600,
-                fontFamily: "'JetBrains Mono', monospace",
-                letterSpacing: "0.06em",
-                whiteSpace: "nowrap",
-                flexShrink: 0,
-                transition: "all 0.15s",
-              }}
-              onMouseEnter={(e) => {
-                if (!loading) {
-                  e.target.style.background = "#102a18";
-                  e.target.style.borderColor = "#2a6a3a";
-                }
-              }}
-              onMouseLeave={(e) => {
-                e.target.style.background = "#0d2010";
-                e.target.style.borderColor = "#1a4a2a";
-              }}
-            >
-              ⚡ REPAIR DEMO
-            </button>
-            <div
-              style={{
-                flex: 1,
-                background: "#0a0d16",
-                border: "1px solid #1e2230",
-                borderRadius: 14,
-                padding: "2px 6px 2px 16px",
-                display: "flex",
-                alignItems: "center",
-                gap: 8,
-                transition: "border-color 0.15s",
-              }}
-              onFocus={() => { }}
-            >
-              <textarea
-                ref={inputRef}
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={handleKey}
-                placeholder="Ask a business question…"
-                rows={1}
-                style={{
-                  flex: 1,
-                  background: "none",
-                  border: "none",
-                  outline: "none",
-                  color: "#c8d0e8",
-                  fontSize: 14,
-                  fontFamily: "'DM Sans', 'Segoe UI', sans-serif",
-                  resize: "none",
-                  lineHeight: 1.6,
-                  padding: "10px 0",
-                  maxHeight: 120,
-                  overflowY: "auto",
-                }}
-                onInput={(e) => {
-                  e.target.style.height = "auto";
-                  e.target.style.height =
-                    Math.min(e.target.scrollHeight, 120) + "px";
-                }}
+        <div style={{ padding: "16px 24px 20px", background: "#080b12", borderTop: "1px solid #1a1d2a", flexShrink: 0 }}>
+          <div style={{ maxWidth: 860, margin: "0 auto", display: "flex", gap: 10, alignItems: "flex-end" }}>
+            <div style={{ flex: 1, background: "#0a0d16", border: "1px solid #1e2230", borderRadius: 14, padding: "2px 6px 2px 16px", display: "flex", alignItems: "center", gap: 8, transition: "border-color 0.15s" }}>
+              <textarea ref={inputRef} value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={handleKey}
+                placeholder="Message Copilot…" rows={1}
+                style={{ flex: 1, background: "none", border: "none", outline: "none", color: "#c8d0e8", fontSize: 14, fontFamily: "'DM Sans', 'Segoe UI', sans-serif", resize: "none", lineHeight: 1.6, padding: "10px 0", maxHeight: 120, overflowY: "auto" }}
+                onInput={(e) => { e.target.style.height = "auto"; e.target.style.height = Math.min(e.target.scrollHeight, 120) + "px"; }}
               />
             </div>
             <button
-              onClick={() => sendQuery(input)}
-              disabled={loading || !input.trim()}
-              style={{
-                width: 44,
-                height: 44,
-                borderRadius: 12,
-                background:
-                  loading || !input.trim()
-                    ? "#1a1d2a"
-                    : "linear-gradient(135deg, #3a2a80, #5a3ab0)",
-                border: "1px solid",
-                borderColor:
-                  loading || !input.trim() ? "#1e2230" : "#5a40c0",
-                color:
-                  loading || !input.trim() ? "#3a4060" : "#d0c8f0",
-                cursor:
-                  loading || !input.trim() ? "not-allowed" : "pointer",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                fontSize: 18,
-                flexShrink: 0,
-                transition: "all 0.15s",
-              }}
+              onClick={() => sendQuery(input)} disabled={loading || !input.trim()}
+              style={{ width: 44, height: 44, borderRadius: 12, background: loading || !input.trim() ? "#1a1d2a" : "linear-gradient(135deg, #3a2a80, #5a3ab0)", border: "1px solid", borderColor: loading || !input.trim() ? "#1e2230" : "#5a40c0", color: loading || !input.trim() ? "#3a4060" : "#d0c8f0", cursor: loading || !input.trim() ? "not-allowed" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, flexShrink: 0, transition: "all 0.15s" }}
             >
-              {loading ? (
-                <div
-                  style={{
-                    width: 16,
-                    height: 16,
-                    border: "2px solid #3a4060",
-                    borderTopColor: "#7f77dd",
-                    borderRadius: "50%",
-                    animation: "spin 0.8s linear infinite",
-                  }}
-                />
-              ) : (
-                "↑"
-              )}
+              {loading ? <div style={{ width: 16, height: 16, border: "2px solid #3a4060", borderTopColor: "#7f77dd", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} /> : "↑"}
             </button>
           </div>
-          <p
-            style={{
-              textAlign: "center",
-              marginTop: 10,
-              fontSize: 13,
-              color: "#6a7a9a",
-              fontFamily: "monospace",
-              letterSpacing: "0.05em",
-            }}
-          >
-            Connected to analytics backend · Shift+Enter for newline
+          <p style={{ textAlign: "center", marginTop: 10, fontSize: 13, color: "#6a7a9a", fontFamily: "monospace", letterSpacing: "0.05em" }}>
+            Results automatically filtered by access level · Shift+Enter for newline
           </p>
         </div>
       </div>
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
-    </div>
     </div>
   );
 }

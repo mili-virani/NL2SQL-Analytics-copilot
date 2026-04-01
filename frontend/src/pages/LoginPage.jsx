@@ -4,7 +4,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 export default function LoginPage() {
-    const { user, login, loginGuest, loginLocal, signupLocal } = useAuth();
+    const { user, authenticating, login, loginGuest, loginLocal, signupLocal } = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
 
@@ -46,6 +46,22 @@ export default function LoginPage() {
             if (!res.success) setError(res.message);
         }
     };
+
+    if (authenticating) {
+        return (
+            <div style={{
+                minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                background: 'linear-gradient(135deg, #0a0d16, #12151f)', flexDirection: 'column', gap: 20
+            }}>
+                <div style={{
+                    width: 48, height: 48, borderRadius: '50%', border: '4px solid rgba(74, 158, 255, 0.2)',
+                    borderTopColor: '#4a9eff', animation: 'spin 1s linear infinite'
+                }} />
+                <style>{`@keyframes spin { 100% { transform: rotate(360deg); } }`}</style>
+                <h3 style={{ color: '#fff', fontFamily: "'Inter', sans-serif" }}>Signing you in...</h3>
+            </div>
+        );
+    }
 
     return (
         <div style={{

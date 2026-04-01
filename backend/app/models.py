@@ -24,3 +24,36 @@ class AuditLog(Base):
     action_type = Column(String)
     action_details = Column(String)
     created_at = Column(DateTime, default=datetime.utcnow)
+
+class Conversation(Base):
+    __tablename__ = "conversations"
+    conversation_id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.user_id"), nullable=True, index=True)
+    title = Column(String, default="New Chat")
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+class ConversationMessage(Base):
+    __tablename__ = "conversation_messages"
+    message_id = Column(Integer, primary_key=True, index=True)
+    conversation_id = Column(Integer, ForeignKey("conversations.conversation_id"), nullable=False, index=True)
+    role = Column(String, nullable=False) # 'user' or 'assistant'
+    content = Column(String, nullable=False)
+    response_json = Column(String, nullable=True) # Full structured response if assistant
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+class QueryLog(Base):
+    __tablename__ = "query_logs"
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.user_id"), nullable=True, index=True)
+    conversation_id = Column(Integer, ForeignKey("conversations.conversation_id"), nullable=True, index=True)
+    question = Column(String, nullable=False)
+    mode = Column(String)
+    selected_schema = Column(String)
+    generated_sql = Column(String)
+    repaired_sql = Column(String)
+    execution_success = Column(Boolean, default=False)
+    repaired = Column(Boolean, default=False)
+    audit_trail_json = Column(String)
+    results_preview = Column(String)
+    created_at = Column(DateTime, default=datetime.utcnow)

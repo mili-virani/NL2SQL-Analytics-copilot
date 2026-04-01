@@ -7,6 +7,7 @@ export function AuthProvider({ children }) {
     const [user, setUser] = useState(null);
     const [token, setToken] = useState(localStorage.getItem('access_token'));
     const [loading, setLoading] = useState(true);
+    const [authenticating, setAuthenticating] = useState(false);
 
     const API_BASE = import.meta.env.VITE_API_BASE || "http://127.0.0.1:8001";
 
@@ -55,6 +56,7 @@ export function AuthProvider({ children }) {
     };
 
     const login = async (credential) => {
+        setAuthenticating(true);
         const res = await fetch(`${API_BASE}/auth/google/login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -63,8 +65,10 @@ export function AuthProvider({ children }) {
         if (res.ok) {
             const data = await res.json();
             await handleAuthSuccess(data.access_token);
+            setAuthenticating(false);
             return true;
         }
+        setAuthenticating(false);
         return false;
     };
 
@@ -115,7 +119,7 @@ export function AuthProvider({ children }) {
     };
 
     return (
-        <AuthContext.Provider value={{ user, token, loading, login, loginGuest, loginLocal, signupLocal, logout }}>
+        <AuthContext.Provider value={{ user, token, loading, authenticating, login, loginGuest, loginLocal, signupLocal, logout }}>
             <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID || "placeholder-client-id.apps.googleusercontent.com"}>
                 {children}
             </GoogleOAuthProvider>
