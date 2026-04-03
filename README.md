@@ -2,7 +2,7 @@
 
 An intelligent, self-healing analytics system that converts natural language queries into **accurate SQL**, executes them on real databases, and returns **results, explanations, charts, and full audit traceability**.
 
-> 🚀 Not just NL → SQL — this is a **production-style, multi-agent analytics copilot**.
+🚀 Not just NL → SQL — this is a **production-style, multi-agent analytics copilot**.
 
 ---
 
