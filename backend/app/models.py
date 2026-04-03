@@ -25,11 +25,23 @@ class AuditLog(Base):
     action_details = Column(String)
     created_at = Column(DateTime, default=datetime.utcnow)
 
+class Project(Base):
+    __tablename__ = "projects"
+    project_id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.user_id"), nullable=False, index=True)
+    name = Column(String, nullable=False)
+    color = Column(String, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
 class Conversation(Base):
     __tablename__ = "conversations"
     conversation_id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.user_id"), nullable=True, index=True)
     title = Column(String, default="New Chat")
+    is_pinned = Column(Boolean, default=False)
+    is_archived = Column(Boolean, default=False)
+    project_id = Column(Integer, ForeignKey("projects.project_id"), nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 

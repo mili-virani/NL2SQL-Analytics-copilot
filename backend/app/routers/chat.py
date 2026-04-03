@@ -6,7 +6,7 @@ from typing import Optional, List, Any
 from sqlalchemy.orm import Session
 
 from app.dependencies import get_optional_user, get_db
-from app.models import User, Conversation, ConversationMessage, QueryLog
+from app.models import User, Conversation, ConversationMessage, QueryLog, Project
 from app.orchestrator import route_query
 
 router = APIRouter(prefix="/chat", tags=["chat"])
@@ -21,7 +21,13 @@ class CreateConversationRequest(BaseModel):
     title: Optional[str] = "New Chat"
 
 class UpdateConversationRequest(BaseModel):
-    title: str
+    title: Optional[str] = None
+    is_pinned: Optional[bool] = None
+    is_archived: Optional[bool] = None
+    project_id: Optional[int] = None
+
+class CreateProjectRequest(BaseModel):
+    name: str
 
 # --- Endpoints ---
 
@@ -30,7 +36,15 @@ def list_conversations(current_user: User = Depends(get_optional_user), db: Sess
     if not current_user:
         return []
     convs = db.query(Conversation).filter(Conversation.user_id == current_user.user_id).order_by(Conversation.updated_at.desc()).all()
-    return [{"conversation_id": c.conversation_id, "title": c.title, "created_at": c.created_at, "updated_at": c.updated_at} for c in convs]
+    return [{
+        "conversation_id": c.conversation_id, 
+        "title": c.title, 
+        "is_pinned": c.is_pinned,
+        "is_archived": c.is_archived,
+        "project_id": c.project_id,
+        "created_at": c.created_at, 
+        "updated_at": c.updated_at
+    } for c in convs]
 
 @router.post("/conversations")
 def create_conversation(req: CreateConversationRequest, current_user: User = Depends(get_optional_user), db: Session = Depends(get_db)):
@@ -40,7 +54,13 @@ def create_conversation(req: CreateConversationRequest, current_user: User = Dep
     db.add(conv)
     db.commit()
     db.refresh(conv)
-    return {"conversation_id": conv.conversation_id, "title": conv.title}
+    return {
+        "conversation_id": conv.conversation_id, 
+        "title": conv.title,
+        "is_pinned": conv.is_pinned,
+        "is_archived": conv.is_archived,
+        "project_id": conv.project_id
+    }
 
 @router.get("/conversations/{conversation_id}")
 def get_conversation(conversation_id: int, current_user: User = Depends(get_optional_user), db: Session = Depends(get_db)):
@@ -69,13 +89,17 @@ def get_conversation(conversation_id: int, current_user: User = Depends(get_opti
     }
 
 @router.patch("/conversations/{conversation_id}")
-def rename_conversation(conversation_id: int, req: UpdateConversationRequest, current_user: User = Depends(get_optional_user), db: Session = Depends(get_db)):
+def update_conversation(conversation_id: int, req: UpdateConversationRequest, current_user: User = Depends(get_optional_user), db: Session = Depends(get_db)):
     if not current_user:
         raise HTTPException(status_code=401, detail="Unauthorized")
     conv = db.query(Conversation).filter(Conversation.conversation_id == conversation_id, Conversation.user_id == current_user.user_id).first()
     if not conv:
         raise HTTPException(status_code=404, detail="Conversation not found")
-    conv.title = req.title
+    
+    update_data = req.model_dump(exclude_unset=True)
+    for key, value in update_data.items():
+        setattr(conv, key, value)
+        
     db.commit()
     return {"success": True}
 
@@ -89,10 +113,30 @@ def delete_conversation(conversation_id: int, current_user: User = Depends(get_o
     
     # Delete messages first
     db.query(ConversationMessage).filter(ConversationMessage.conversation_id == conversation_id).delete()
+    
+    # Nullify query logs to prevent foreign key violation
+    db.query(QueryLog).filter(QueryLog.conversation_id == conversation_id).update({"conversation_id": None})
+    
     db.delete(conv)
     db.commit()
     return {"success": True}
 
+@router.get("/projects")
+def list_projects(current_user: User = Depends(get_optional_user), db: Session = Depends(get_db)):
+    if not current_user:
+        return []
+    projects = db.query(Project).filter(Project.user_id == current_user.user_id).order_by(Project.created_at.desc()).all()
+    return [{"project_id": p.project_id, "name": p.name, "color": p.color} for p in projects]
+
+@router.post("/projects")
+def create_project(req: CreateProjectRequest, current_user: User = Depends(get_optional_user), db: Session = Depends(get_db)):
+    if not current_user:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    project = Project(user_id=current_user.user_id, name=req.name)
+    db.add(project)
+    db.commit()
+    db.refresh(project)
+    return {"project_id": project.project_id, "name": project.name, "color": project.color}
 
 @router.post("/query")
 def submit_query(

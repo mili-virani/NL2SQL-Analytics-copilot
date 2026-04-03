@@ -169,16 +169,22 @@ export default function App() {
   const { user, token, logout } = useAuth();
   const navigate = useNavigate();
   const [conversations, setConversations] = useState([]);
+  const [projects, setProjects] = useState([]);
   const [currentConversationId, setCurrentConversationId] = useState(null);
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [sidebarSearch, setSidebarSearch] = useState("");
+  const [deleteConfirm, setDeleteConfirm] = useState(null);
+  const [shareModal, setShareModal] = useState(null);
   const bottomRef = useRef(null);
   const inputRef = useRef(null);
 
   useEffect(() => {
-    if (token) fetchConversations();
+    if (token) {
+      fetchConversations();
+      fetchProjects();
+    }
   }, [token]);
 
   useEffect(() => {
@@ -192,6 +198,45 @@ export default function App() {
       });
       if (res.ok) setConversations(await res.json());
     } catch (err) { console.error("Failed to load conversations"); }
+  };
+
+  const fetchProjects = async () => {
+    try {
+      const res = await fetch(`${API_BASE}/chat/projects`, {
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      if (res.ok) setProjects(await res.json());
+    } catch (err) { console.error("Failed to load projects"); }
+  };
+
+  const handleUpdateConversation = async (id, data) => {
+    // Optimistic update
+    setConversations(prev => prev.map(c => c.conversation_id === id ? { ...c, ...data } : c));
+    try {
+      await fetch(`${API_BASE}/chat/conversations/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+        body: JSON.stringify(data)
+      });
+    } catch (e) {
+      console.error("Failed to update chat");
+      fetchConversations(); // revert on failure
+    }
+  };
+
+  const handleDeleteConversation = async () => {
+    if (!deleteConfirm) return;
+    try {
+      const res = await fetch(`${API_BASE}/chat/conversations/${deleteConfirm}`, {
+        method: "DELETE",
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      if (res.ok) {
+        setConversations(prev => prev.filter(c => c.conversation_id !== deleteConfirm));
+        if (currentConversationId === deleteConfirm) newChat();
+      }
+    } catch (e) { console.error("Failed to delete chat"); }
+    finally { setDeleteConfirm(null); }
   };
 
   const loadConversation = async (id) => {
@@ -309,11 +354,15 @@ export default function App() {
           />
         </div>
         
-        <div style={{ flex: 1, overflowY: "auto", padding: "0 10px", display: "flex", flexDirection: "column", gap: 4 }}>
+        <div style={{ flex: 1, overflowY: "auto", padding: "0 10px", display: "flex", flexDirection: "column", gap: 16 }}>
             <ChatList 
               conversations={conversations.filter(c => c.title?.toLowerCase().includes(sidebarSearch.toLowerCase()))}
+              projects={projects}
               currentConversationId={currentConversationId}
               onSelect={loadConversation}
+              onUpdate={handleUpdateConversation}
+              onDeleteClick={setDeleteConfirm}
+              onShareClick={setShareModal}
             />
         </div>
 
@@ -413,6 +462,35 @@ export default function App() {
           </p>
         </div>
       </div>
+      {/* Modals */}
+      {deleteConfirm && (
+        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", zIndex: 100, display: "flex", alignItems: "center", justifyContent: "center" }} onClick={() => setDeleteConfirm(null)}>
+          <div style={{ background: "#16171d", padding: "24px", borderRadius: "12px", border: "1px solid #2e303a", width: 400, fontFamily: "var(--sans)" }} onClick={e => e.stopPropagation()}>
+            <h3 style={{ margin: "0 0 12px", color: "#f3f4f6", fontSize: 18 }}>Delete Chat?</h3>
+            <p style={{ margin: "0 0 24px", color: "#9ca3af", fontSize: 14 }}>This action cannot be undone. Are you sure you want to permanently delete this chat?</p>
+            <div style={{ display: "flex", justifyContent: "flex-end", gap: 12 }}>
+              <button onClick={() => setDeleteConfirm(null)} style={{ padding: "8px 16px", borderRadius: "6px", background: "transparent", border: "1px solid #2e303a", color: "#f3f4f6", cursor: "pointer", fontSize: 14 }}>Cancel</button>
+              <button onClick={handleDeleteConversation} style={{ padding: "8px 16px", borderRadius: "6px", background: "#ef4444", border: "none", color: "#fff", cursor: "pointer", fontSize: 14 }}>Delete</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {shareModal && (
+        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", zIndex: 100, display: "flex", alignItems: "center", justifyContent: "center" }} onClick={() => setShareModal(null)}>
+          <div style={{ background: "#16171d", padding: "24px", borderRadius: "12px", border: "1px solid #2e303a", width: 400, fontFamily: "var(--sans)" }} onClick={e => e.stopPropagation()}>
+            <h3 style={{ margin: "0 0 12px", color: "#f3f4f6", fontSize: 18 }}>Share Chat</h3>
+            <p style={{ margin: "0 0 16px", color: "#9ca3af", fontSize: 14 }}>Anyone with this link will be able to view this chat.</p>
+            <div style={{ display: "flex", gap: 8, marginBottom: 24 }}>
+              <input type="text" readOnly value={`https://app.nl2sql.local/share/${shareModal}`} style={{ flex: 1, padding: "8px 12px", borderRadius: "6px", background: "#1f2028", border: "1px solid #2e303a", color: "#f3f4f6", outline: "none", fontSize: 14 }} />
+              <button onClick={(e) => { navigator.clipboard.writeText(`https://app.nl2sql.local/share/${shareModal}`); e.target.textContent = "Copied!"; setTimeout(() => { if (e.target) e.target.textContent = "Copy"; }, 2000); }} style={{ padding: "8px 16px", borderRadius: "6px", background: "linear-gradient(135deg, #3a2a80, #5a3ab0)", border: "none", color: "#fff", cursor: "pointer", whiteSpace: "nowrap", fontSize: 14 }}>Copy</button>
+            </div>
+            <div style={{ display: "flex", justifyContent: "flex-end" }}>
+              <button onClick={() => setShareModal(null)} style={{ padding: "8px 16px", borderRadius: "6px", background: "transparent", border: "1px solid #2e303a", color: "#f3f4f6", cursor: "pointer", fontSize: 14 }}>Done</button>
+            </div>
+          </div>
+        </div>
+      )}
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   );
