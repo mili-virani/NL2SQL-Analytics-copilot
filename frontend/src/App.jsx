@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "./context/AuthContext";
 import ResultChart from "./components/ResultChart";
+import ChatList from "./components/chat/ChatList";
 
 const API_BASE = import.meta.env.VITE_API_BASE || "http://127.0.0.1:8001";
 
@@ -309,22 +310,11 @@ export default function App() {
         </div>
         
         <div style={{ flex: 1, overflowY: "auto", padding: "0 10px", display: "flex", flexDirection: "column", gap: 4 }}>
-            {conversations
-              .filter(c => c.title?.toLowerCase().includes(sidebarSearch.toLowerCase()))
-              .map(c => (
-                <button 
-                  key={c.conversation_id}
-                  onClick={() => loadConversation(c.conversation_id)}
-                  style={{
-                    padding: "10px 14px", background: currentConversationId === c.conversation_id ? "#1a1e2a" : "transparent", color: currentConversationId === c.conversation_id ? "#fff" : "#8fa1c7",
-                    border: "none", borderRadius: 8, textAlign: "left", cursor: "pointer", fontSize: 13,
-                    whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", transition: "background 0.15s"
-                  }}
-                  title={c.title}
-                >
-                  {c.title}
-                </button>
-            ))}
+            <ChatList 
+              conversations={conversations.filter(c => c.title?.toLowerCase().includes(sidebarSearch.toLowerCase()))}
+              currentConversationId={currentConversationId}
+              onSelect={loadConversation}
+            />
         </div>
 
         <div style={{ padding: "16px 20px", borderTop: "1px solid #1e2230" }}>
