@@ -33,7 +33,7 @@ class CreateProjectRequest(BaseModel):
 
 @router.get("/conversations")
 def list_conversations(current_user: User = Depends(get_optional_user), db: Session = Depends(get_db)):
-    if not current_user:
+    if not current_user or current_user.role == "guest":
         return []
     convs = db.query(Conversation).filter(Conversation.user_id == current_user.user_id).order_by(Conversation.updated_at.desc()).all()
     return [{
@@ -48,7 +48,7 @@ def list_conversations(current_user: User = Depends(get_optional_user), db: Sess
 
 @router.post("/conversations")
 def create_conversation(req: CreateConversationRequest, current_user: User = Depends(get_optional_user), db: Session = Depends(get_db)):
-    if not current_user:
+    if not current_user or current_user.role == "guest":
         raise HTTPException(status_code=401, detail="Must be logged in to save chats")
     conv = Conversation(user_id=current_user.user_id, title=req.title)
     db.add(conv)
@@ -64,7 +64,7 @@ def create_conversation(req: CreateConversationRequest, current_user: User = Dep
 
 @router.get("/conversations/{conversation_id}")
 def get_conversation(conversation_id: int, current_user: User = Depends(get_optional_user), db: Session = Depends(get_db)):
-    if not current_user:
+    if not current_user or current_user.role == "guest":
         raise HTTPException(status_code=401, detail="Unauthorized")
     conv = db.query(Conversation).filter(Conversation.conversation_id == conversation_id, Conversation.user_id == current_user.user_id).first()
     if not conv:
@@ -90,7 +90,7 @@ def get_conversation(conversation_id: int, current_user: User = Depends(get_opti
 
 @router.patch("/conversations/{conversation_id}")
 def update_conversation(conversation_id: int, req: UpdateConversationRequest, current_user: User = Depends(get_optional_user), db: Session = Depends(get_db)):
-    if not current_user:
+    if not current_user or current_user.role == "guest":
         raise HTTPException(status_code=401, detail="Unauthorized")
     conv = db.query(Conversation).filter(Conversation.conversation_id == conversation_id, Conversation.user_id == current_user.user_id).first()
     if not conv:
@@ -105,7 +105,7 @@ def update_conversation(conversation_id: int, req: UpdateConversationRequest, cu
 
 @router.delete("/conversations/{conversation_id}")
 def delete_conversation(conversation_id: int, current_user: User = Depends(get_optional_user), db: Session = Depends(get_db)):
-    if not current_user:
+    if not current_user or current_user.role == "guest":
         raise HTTPException(status_code=401, detail="Unauthorized")
     conv = db.query(Conversation).filter(Conversation.conversation_id == conversation_id, Conversation.user_id == current_user.user_id).first()
     if not conv:
@@ -123,14 +123,14 @@ def delete_conversation(conversation_id: int, current_user: User = Depends(get_o
 
 @router.get("/projects")
 def list_projects(current_user: User = Depends(get_optional_user), db: Session = Depends(get_db)):
-    if not current_user:
+    if not current_user or current_user.role == "guest":
         return []
     projects = db.query(Project).filter(Project.user_id == current_user.user_id).order_by(Project.created_at.desc()).all()
     return [{"project_id": p.project_id, "name": p.name, "color": p.color} for p in projects]
 
 @router.post("/projects")
 def create_project(req: CreateProjectRequest, current_user: User = Depends(get_optional_user), db: Session = Depends(get_db)):
-    if not current_user:
+    if not current_user or current_user.role == "guest":
         raise HTTPException(status_code=401, detail="Unauthorized")
     project = Project(user_id=current_user.user_id, name=req.name)
     db.add(project)

@@ -3,7 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "./context/AuthContext";
 import ResultChart from "./components/ResultChart";
 import ChatList from "./components/chat/ChatList";
-
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 const API_BASE = import.meta.env.VITE_API_BASE || "http://127.0.0.1:8001";
 
 const SCHEMA_COLORS = {
@@ -67,8 +68,10 @@ function AssistantTextReply({ data }) {
     <div style={{ display: "flex", gap: 12, marginBottom: 28, alignItems: "flex-start" }}>
       <div style={{ width: 34, height: 34, borderRadius: 10, background: "linear-gradient(135deg, #1a1a3e, #2a1a50)", border: "1px solid #3a3570", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, color: "#9f97ef", flexShrink: 0 }}>◈</div>
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ padding: "14px 18px", background: "#0e1017", border: "1px solid #1e2230", borderRadius: "4px 18px 18px 18px", color: "#c8d0e8", fontSize: 14, lineHeight: 1.7, fontFamily: "'DM Sans', 'Segoe UI', sans-serif" }}>
-          {data.assistant_message || data.explanation}
+        <div className="markdown-response" style={{ padding: "14px 18px", background: "#0e1017", border: "1px solid #1e2230", borderRadius: "4px 18px 18px 18px" }}>
+          <ReactMarkdown remarkPlugins={[remarkGfm]}>
+            {data.assistant_message || data.explanation || ""}
+          </ReactMarkdown>
         </div>
         {suggestions.length > 0 && (
           <div style={{ marginTop: 12, display: "flex", flexWrap: "wrap", gap: 8 }}>
@@ -137,8 +140,10 @@ function MessageBubble({ msg }) {
             <SchemaTag schema={data.selected_schema} />
           </div>
         )}
-        <div style={{ padding: "14px 18px", background: "#0e1017", border: "1px solid #1e2230", borderRadius: 12, marginBottom: 12, color: "#c8d0e8", fontSize: 14, lineHeight: 1.7, fontFamily: "'DM Sans', 'Segoe UI', sans-serif" }}>
-          {data.explanation}
+        <div className="markdown-response" style={{ padding: "14px 18px", background: "#0e1017", border: "1px solid #1e2230", borderRadius: 12, marginBottom: 12 }}>
+          <ReactMarkdown remarkPlugins={[remarkGfm]}>
+            {data.explanation || ""}
+          </ReactMarkdown>
         </div>
         
         {(Array.isArray(data.results) && data.results.length > 0) && (
@@ -182,10 +187,19 @@ export default function App() {
 
   useEffect(() => {
     if (token) {
-      fetchConversations();
-      fetchProjects();
+      if (user?.role === "guest") {
+        setConversations([]);
+        setProjects([]);
+        newChat();
+      } else {
+        fetchConversations();
+        fetchProjects();
+      }
+    } else {
+      setConversations([]);
+      setProjects([]);
     }
-  }, [token]);
+  }, [token, user]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -278,7 +292,7 @@ export default function App() {
 
     try {
       let convId = currentConversationId;
-      if (!convId && token) {
+      if (!convId && token && user?.role !== "guest") {
         // Create conversation
         const res = await fetch(`${API_BASE}/chat/conversations`, {
             method: "POST", 
@@ -347,23 +361,32 @@ export default function App() {
             <span>+</span> New Chat
           </button>
           
-          <input 
-            type="text" value={sidebarSearch} onChange={e => setSidebarSearch(e.target.value)}
-            placeholder="Search chats..."
-            style={{ width: "100%", padding: "8px 12px", borderRadius: 6, background: "#0b0c13", border: "1px solid #1e2230", color: "#8fa1c7", fontSize: 13, outline: "none", marginBottom: 12 }}
-          />
+          {user?.role !== "guest" && (
+            <input 
+              type="text" value={sidebarSearch} onChange={e => setSidebarSearch(e.target.value)}
+              placeholder="Search chats..."
+              style={{ width: "100%", padding: "8px 12px", borderRadius: 6, background: "#0b0c13", border: "1px solid #1e2230", color: "#8fa1c7", fontSize: 13, outline: "none", marginBottom: 12 }}
+            />
+          )}
         </div>
         
         <div style={{ flex: 1, overflowY: "auto", padding: "0 10px", display: "flex", flexDirection: "column", gap: 16 }}>
-            <ChatList 
-              conversations={conversations.filter(c => c.title?.toLowerCase().includes(sidebarSearch.toLowerCase()))}
-              projects={projects}
-              currentConversationId={currentConversationId}
-              onSelect={loadConversation}
-              onUpdate={handleUpdateConversation}
-              onDeleteClick={setDeleteConfirm}
-              onShareClick={setShareModal}
-            />
+            {user?.role === "guest" ? (
+              <div style={{ padding: "24px 10px", textAlign: "center", color: "#6a7a9a", fontSize: 13, lineHeight: 1.5 }}>
+                <p style={{ marginBottom: "12px", color: "#a0a8c0", fontWeight: 600 }}>Guest Session</p>
+                <p>Sign in to save your conversation history and access advanced features.</p>
+              </div>
+            ) : (
+              <ChatList 
+                conversations={conversations.filter(c => c.title?.toLowerCase().includes(sidebarSearch.toLowerCase()))}
+                projects={projects}
+                currentConversationId={currentConversationId}
+                onSelect={loadConversation}
+                onUpdate={handleUpdateConversation}
+                onDeleteClick={setDeleteConfirm}
+                onShareClick={setShareModal}
+              />
+            )}
         </div>
 
         <div style={{ padding: "16px 20px", borderTop: "1px solid #1e2230" }}>
