@@ -435,7 +435,7 @@ export default function App() {
 
         {/* Chat area */}
         <div style={{ flex: 1, overflowY: "auto", padding: "0 16px" }}>
-          <div style={{ maxWidth: 860, margin: "0 auto", padding: "24px 0" }}>
+          <div style={{ maxWidth: 860, margin: "0 auto", padding: "24px 0", textAlign: "left" }}>
             {isEmpty && (
               <div style={{ textAlign: "center", padding: "60px 0 40px", animation: "fadeSlideUp 0.5s ease" }}>
                 <div style={{ width: 64, height: 64, margin: "0 auto 24px", borderRadius: 18, background: "linear-gradient(135deg, #12122e, #220e40)", border: "1px solid #3a2a70", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 28, color: "#9f97ef" }}>◈</div>

@@ -250,6 +250,7 @@ code {
   line-height: 1.7;
   color: #ececf1;
   font-size: 15px;
+  text-align: left;
 }
 .markdown-response > *:first-child {
   margin-top: 0;
