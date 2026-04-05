@@ -68,7 +68,7 @@ function AssistantTextReply({ data }) {
     <div style={{ display: "flex", gap: 12, marginBottom: 28, alignItems: "flex-start" }}>
       <div style={{ width: 34, height: 34, borderRadius: 10, background: "linear-gradient(135deg, #1a1a3e, #2a1a50)", border: "1px solid #3a3570", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, color: "#9f97ef", flexShrink: 0 }}>◈</div>
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div className="markdown-response" style={{ padding: "14px 18px", background: "#0e1017", border: "1px solid #1e2230", borderRadius: "4px 18px 18px 18px" }}>
+        <div className="markdown-response" style={{ padding: "18px 22px", background: "#11131a", border: "1px solid #2a2d3d", borderRadius: "8px 24px 24px 24px", boxShadow: "0 2px 10px rgba(0,0,0,0.15)" }}>
           <ReactMarkdown remarkPlugins={[remarkGfm]}>
             {data.assistant_message || data.explanation || ""}
           </ReactMarkdown>
@@ -140,7 +140,7 @@ function MessageBubble({ msg }) {
             <SchemaTag schema={data.selected_schema} />
           </div>
         )}
-        <div className="markdown-response" style={{ padding: "14px 18px", background: "#0e1017", border: "1px solid #1e2230", borderRadius: 12, marginBottom: 12 }}>
+        <div className="markdown-response" style={{ padding: "18px 22px", background: "#11131a", border: "1px solid #2a2d3d", borderRadius: "8px 24px 24px 24px", marginBottom: 16, boxShadow: "0 2px 10px rgba(0,0,0,0.15)" }}>
           <ReactMarkdown remarkPlugins={[remarkGfm]}>
             {data.explanation || ""}
           </ReactMarkdown>
