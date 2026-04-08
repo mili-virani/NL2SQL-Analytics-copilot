@@ -59,6 +59,11 @@ class RepairTestRequest(BaseModel):
 def root():
     return {"message": "Backend is running"}
 
+@app.get("/health")
+@app.head("/health")
+def health():
+    return {"status": "ok"}
+
 
 @app.get("/test-db")
 def test_db():
