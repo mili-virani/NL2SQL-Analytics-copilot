@@ -27,9 +27,9 @@ def classify_intent(question: str) -> str:
     prompt = f"""
     Classify the following query into exactly ONE of the following modes:
     - NL2SQL: If it asks about business data, internal databases, analytics, tables, or charts.
-    - SEARCH: If it asks for external current events, pricing, web data, or general knowledge.
+    - SEARCH: If it asks for external current events, pricing, or factual web data that requires live search. Do NOT use for casual talk, general advice, or greetings.
     - PLAYWRIGHT: If it explicitly asks to scrape, extract, or visit a specific URL.
-    - CHAT: If it is a normal greeting, vague question, or conversational chit-chat.
+    - CHAT: If it is a normal greeting, vague question, conversational chit-chat, or general advice (e.g., what to cook, jokes, how are you).
 
     Query: "{question}"
     
@@ -60,8 +60,9 @@ def handle_chat_mode(question: str):
     )
     return {
         "mode": "CHAT",
+        "assistant_message": response.text,
         "results": response.text,
-        "explanation": "Answered via normal LLM chat."
+        "explanation": None
     }
 
 @cached(ttl=21600)
@@ -92,8 +93,10 @@ def route_query_impl(question: str):
         search_res = perform_web_search(question)
         return {
             "mode": "SEARCH",
-            "results": search_res,
-            "explanation": "Answered via Web Search."
+            "assistant_message": search_res.get("results") if isinstance(search_res, dict) else str(search_res),
+            "results": search_res.get("results") if isinstance(search_res, dict) else str(search_res),
+            "source": search_res.get("source") if isinstance(search_res, dict) else "unknown",
+            "explanation": None
         }
 
     elif mode == "PLAYWRIGHT":

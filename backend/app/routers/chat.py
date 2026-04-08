@@ -178,19 +178,22 @@ def submit_query(
             cleaned_response_for_db = {
                 "mode": response.get("mode"),
                 "explanation": response.get("explanation"),
+                "assistant_message": response.get("assistant_message"),
                 "results": response.get("results"),     
                 "selected_schema": response.get("selected_schema")
             }
+            content_val = response.get("assistant_message") or response.get("results", "")
             assistant_msg = ConversationMessage(
                 conversation_id=request.conversation_id,
                 role="assistant",
-                content=str(response.get("results", "")),
+                content=str(content_val),
                 response_json=json.dumps(cleaned_response_for_db, default=str)
             )
             db.add(assistant_msg)
             db.commit()
 
         # Log internal details
+        preview_val = response.get("assistant_message") or response.get("results", "")
         log = QueryLog(
             user_id=user_id,
             conversation_id=request.conversation_id,
@@ -202,7 +205,7 @@ def submit_query(
             execution_success=True,
             repaired=bool(response.get("repaired_sql")),
             audit_trail_json=json.dumps(response.get("audit_trail", []), default=str),
-            results_preview=str(response.get("results", ""))[:500]
+            results_preview=str(preview_val)[:500]
         )
         db.add(log)
         db.commit()

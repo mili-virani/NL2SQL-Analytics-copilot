@@ -112,16 +112,34 @@ function MessageBubble({ msg }) {
 
   const { data } = msg;
 
-  // Use AssistantTextReply if it's explicitly marked or if results is just a string (e.g. error msg)
+  // Safely detect text-based modes explicitly or by structure
   const isTextOnlyReply = 
       (data?.response_type && data.response_type !== "analytic_query") ||
-      (typeof data?.results === 'string');
+      (typeof data?.results === 'string') ||
+      (data?.assistant_message != null) ||
+      (data?.mode === "SEARCH") ||
+      (data?.mode === "CHAT") ||
+      (data?.mode === "PLAYWRIGHT" && (typeof data?.results === 'string' || typeof data?.results?.results === 'string'));
 
   if (isTextOnlyReply) {
-    // Pack the string results so AssistantTextReply can display it
+    let msgText = data.assistant_message;
+    if (!msgText && typeof data.results === 'string') {
+        msgText = data.results;
+    } else if (!msgText && typeof data.results === 'object' && typeof data.results?.results === 'string') {
+        msgText = data.results.results; // Handle nested case like in old SEARCH mode
+    }
+
+    let displayExplanation = data.explanation;
+    if (msgText && displayExplanation === "Answered via Web Search.") {
+        displayExplanation = "External Info Response";
+    } else if (msgText && displayExplanation === "Answered via normal LLM chat.") {
+        displayExplanation = "General Assistant Response";
+    }
+
     const textData = {
-        assistant_message: typeof data.results === 'string' ? data.results : data.assistant_message,
-        explanation: data.explanation
+        assistant_message: msgText,
+        explanation: displayExplanation,
+        suggestions: data.suggestions
     };
     return <AssistantTextReply data={textData} />;
   }
