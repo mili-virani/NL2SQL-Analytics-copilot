@@ -23,14 +23,15 @@ def generate_text(prompt: str, model: str = "gemini-2.5-flash") -> str:
     return response.text.strip()
 
 
-def generate_sql(question: str, schema_name: str, schema_metadata: dict) -> str:
+def generate_sql(question: str, schema_name: str, schema_metadata: dict, dialect: str = "postgresql") -> str:
     prompt = f"""
-You are a PostgreSQL SQL generator.
+You are a {dialect} SQL generator.
 
 Generate ONLY SQL.
 Do NOT include explanations.
 Do NOT use markdown.
 Only generate read-only SQL using SELECT or WITH.
+Ensure identifiers are properly quoted for {dialect}.
 
 User question:
 {question}
@@ -43,11 +44,9 @@ Schema metadata:
 
 Rules:
 1. Use only tables and columns present in the metadata.
-2. ALWAYS use fully qualified table names with schema prefixes.
-   Example:
-   - inventory.products
-   - inventory.stock
-3. Use PostgreSQL syntax.
+2. ALWAYS use fully qualified table names with schema prefixes (unless SQLite).
+   Example: schema.table
+3. Use {dialect} syntax strictly.
 4. Prefer explicit JOINs.
 5. Add LIMIT 50 unless aggregation.
 6. Do not generate INSERT, UPDATE, DELETE, DROP, or ALTER.

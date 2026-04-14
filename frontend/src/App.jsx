@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "./context/AuthContext";
 import ResultChart from "./components/ResultChart";
 import ChatList from "./components/chat/ChatList";
+import ConnectionsModal from "./components/ConnectionsModal";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 const API_BASE = import.meta.env.VITE_API_BASE || "http://127.0.0.1:8001";
@@ -198,6 +199,7 @@ export default function App() {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [sidebarSearch, setSidebarSearch] = useState("");
+  const [isConnectionsOpen, setIsConnectionsOpen] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState(null);
   const [shareModal, setShareModal] = useState(null);
   const bottomRef = useRef(null);
@@ -375,9 +377,16 @@ export default function App() {
             <div style={{ width: 32, height: 32, borderRadius: 8, background: "linear-gradient(135deg, #4adb8a, #4a9eff)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: "bold", fontSize: 16 }}>◈</div>
             <h1 style={{ margin: 0, fontSize: 16, color: "#fff", letterSpacing: "0.02em" }}>Copilot</h1>
           </div>
-          <button onClick={newChat} style={{ width: "100%", padding: "10px 14px", background: "linear-gradient(135deg, #3a2a80, #5a3ab0)", color: "#fff", border: "1px solid #5a40c0", borderRadius: 8, textAlign: "left", cursor: "pointer", fontSize: 14, fontWeight: 600, display: "flex", alignItems: "center", gap: 8, marginBottom: 20 }}>
-            <span>+</span> New Chat
-          </button>
+          <div style={{ display: "flex", gap: 10, marginBottom: 20 }}>
+            <button onClick={newChat} style={{ flex: 1, padding: "10px 14px", background: "linear-gradient(135deg, #3a2a80, #5a3ab0)", color: "#fff", border: "1px solid #5a40c0", borderRadius: 8, cursor: "pointer", fontSize: 13, fontWeight: 600, display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
+              <span>+</span> New Chat
+            </button>
+            {user?.role !== "guest" && (
+                <button onClick={() => setIsConnectionsOpen(true)} style={{ padding: "10px", background: "#1a1d2a", color: "#c8d0e8", border: "1px solid #2a2d3d", borderRadius: 8, cursor: "pointer", fontSize: 13, fontWeight: 600, display: "flex", alignItems: "center", justifyContent: "center" }} title="Data Sources">
+                🔌
+                </button>
+            )}
+          </div>
           
           {user?.role !== "guest" && (
             <input 
@@ -532,6 +541,8 @@ export default function App() {
           </div>
         </div>
       )}
+      <ConnectionsModal isOpen={isConnectionsOpen} onClose={() => setIsConnectionsOpen(false)} token={token} />
+
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   );

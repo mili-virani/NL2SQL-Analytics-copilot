@@ -6,8 +6,10 @@ from typing import Optional, List, Any
 from sqlalchemy.orm import Session
 
 from app.dependencies import get_optional_user, get_db
-from app.models import User, Conversation, ConversationMessage, QueryLog, Project
+from app.models import User, Conversation, ConversationMessage, QueryLog, Project, DatabaseConnection
 from app.orchestrator import route_query
+from app.db_adapters.factory import get_adapter, get_adapter_from_url
+import os
 
 router = APIRouter(prefix="/chat", tags=["chat"])
 
@@ -16,6 +18,7 @@ class ChatRequest(BaseModel):
     question: str
     context: Optional[str] = None
     conversation_id: Optional[int] = None
+    connection_id: Optional[int] = None
 
 class CreateConversationRequest(BaseModel):
     title: Optional[str] = "New Chat"
@@ -171,7 +174,27 @@ def submit_query(
             db.commit()
 
     try:
-        response = route_query(request.question)
+        adapter = None
+        if request.connection_id and current_user:
+            conn = db.query(DatabaseConnection).filter(DatabaseConnection.id == request.connection_id, DatabaseConnection.user_id == current_user.user_id).first()
+            if not conn:
+                raise HTTPException(status_code=404, detail="Database connection not found")
+            adapter = get_adapter(conn)
+        elif current_user and current_user.active_db_connection_id:
+            conn = db.query(DatabaseConnection).filter(DatabaseConnection.id == current_user.active_db_connection_id, DatabaseConnection.user_id == current_user.user_id).first()
+            if conn:
+                adapter = get_adapter(conn)
+        
+        if not adapter:
+            if current_user and current_user.role in ["admin", "super_admin"]:
+                db_url = os.getenv("DATABASE_URL")
+                if not db_url:
+                    raise ValueError("No database connection available.")
+                adapter = get_adapter_from_url(db_url)
+            else:
+                raise ValueError("No active database connection selected. Please navigate to connections to configure your database.")
+
+        response = route_query(request.question, adapter)
 
         # Save assistant message
         if request.conversation_id:

@@ -3,6 +3,7 @@ import json
 from google import genai
 from pydantic import BaseModel
 from typing import Optional, Any
+from app.db_adapters.base import BaseAdapter
 from app.baseline_nl2sql import run_baseline_nl2sql
 from app.services.search_service import perform_web_search
 from app.services.playwright_service import extract_from_url
@@ -51,6 +52,8 @@ def classify_intent(question: str) -> str:
     except Exception:
         return "CHAT"
 
+
+@cached(ttl=3600)
 def handle_chat_mode(question: str):
     api_key = os.getenv("GEMINI_API_KEY")
     client = genai.Client(api_key=api_key)
@@ -65,12 +68,11 @@ def handle_chat_mode(question: str):
         "explanation": None
     }
 
-@cached(ttl=21600)
-def route_query_impl(question: str):
+def route_query_impl(question: str, adapter: BaseAdapter):
     mode = classify_intent(question)
 
     if mode == "NL2SQL":
-        res = run_baseline_nl2sql(question)
+        res = run_baseline_nl2sql(question, adapter)
         return {
             "mode": "NL2SQL",
             "response_type": res.get("response_type"),
@@ -119,5 +121,5 @@ def route_query_impl(question: str):
     else:
         return handle_chat_mode(question)
 
-def route_query(question: str) -> dict:
-    return route_query_impl(question)
+def route_query(question: str, adapter: BaseAdapter) -> dict:
+    return route_query_impl(question, adapter)

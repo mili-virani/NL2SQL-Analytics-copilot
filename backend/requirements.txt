@@ -12,3 +12,5 @@ python-jose[cryptography]==3.3.0
 google-auth>=2.47.0
 playwright
 python-multipart
+pymysql
+pyodbc

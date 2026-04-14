@@ -1,15 +1,12 @@
-from app.schema_router import choose_schema
-from app.metadata import get_schema_metadata
+from app.schema_router import choose_schema, route_schema
 from app.llm_service import generate_sql
-from app.sql_executor import execute_sql
 from app.sql_validator import validate_sql
 from app.sql_repair import repair_sql
 from app.explanation import generate_explanation
 from app.query_classifier import classify_user_input
-from app.schema_router import route_schema
+from app.db_adapters.base import BaseAdapter
 
-
-def run_baseline_nl2sql(question: str):
+def run_baseline_nl2sql(question: str, adapter: BaseAdapter):
     classification = classify_user_input(question)
 
     if not classification["needs_sql_pipeline"]:
@@ -49,9 +46,10 @@ def run_baseline_nl2sql(question: str):
             ],
         }
 
-    routing = route_schema(question)
+    routing = route_schema(question, adapter)
     selected_schema = routing["selected_schema"]
-    schema_metadata = get_schema_metadata(selected_schema)
+    full_metadata = adapter.get_full_metadata()
+    schema_metadata = full_metadata.get(selected_schema) if selected_schema else None
 
     audit_trail = {
     "question": question,
@@ -81,10 +79,10 @@ def run_baseline_nl2sql(question: str):
             "audit_trail": audit_trail,
         }
 
-    generated_sql = generate_sql(question, selected_schema, schema_metadata)
+    generated_sql = generate_sql(question, selected_schema, schema_metadata, adapter.get_dialect_name())
     audit_trail["initial_sql"] = generated_sql
 
-    validation = validate_sql(generated_sql)
+    validation = validate_sql(generated_sql, full_metadata, adapter)
     audit_trail["initial_validation"] = validation
 
     if not validation["is_valid"]:
@@ -105,7 +103,7 @@ def run_baseline_nl2sql(question: str):
         }
 
     try:
-        results = execute_sql(generated_sql)
+        results = adapter.execute_query(generated_sql)
         audit_trail["execution_outcome"] = "success"
 
         explanation = generate_explanation(
@@ -140,10 +138,11 @@ def run_baseline_nl2sql(question: str):
                 schema_metadata=schema_metadata,
                 bad_sql=generated_sql,
                 error_message=error_message,
+                dialect=adapter.get_dialect_name()
             )
             audit_trail["repaired_sql"] = repaired_sql
 
-            repaired_validation = validate_sql(repaired_sql)
+            repaired_validation = validate_sql(repaired_sql, full_metadata, adapter)
             audit_trail["repaired_validation"] = repaired_validation
 
             if not repaired_validation["is_valid"]:
@@ -167,7 +166,7 @@ def run_baseline_nl2sql(question: str):
                     "audit_trail": audit_trail,
                 }
 
-            repaired_results = execute_sql(repaired_sql)
+            repaired_results = adapter.execute_query(repaired_sql)
             audit_trail["execution_outcome"] = "success_after_repair"
 
             explanation = generate_explanation(

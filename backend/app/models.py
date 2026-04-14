@@ -14,8 +14,26 @@ class User(Base):
     auth_provider = Column(String, default="google")
     role = Column(String, default="user")
     is_active = Column(Boolean, default=True)
+    active_db_connection_id = Column(Integer, ForeignKey("database_connections.id", ondelete="SET NULL"), nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+class DatabaseConnection(Base):
+    __tablename__ = "database_connections"
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.user_id", ondelete="CASCADE"), nullable=False, index=True)
+    name = Column(String, nullable=False)
+    db_type = Column(String, nullable=False) # e.g., 'postgresql', 'mysql', 'sqlite', 'sqlserver'
+    host = Column(String)
+    port = Column(Integer)
+    database_name = Column(String)
+    username = Column(String)
+    encrypted_password = Column(String)
+    ssl_enabled = Column(Boolean, default=False)
+    extra_config_json = Column(String, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
 
 class AuditLog(Base):
     __tablename__ = "audit_logs"

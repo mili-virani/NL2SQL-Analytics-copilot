@@ -1,12 +1,12 @@
 from app.llm_service import generate_sql
 
 
-def repair_sql(question: str, schema_name: str, schema_metadata: dict, bad_sql: str, error_message: str) -> str:
+def repair_sql(question: str, schema_name: str, schema_metadata: dict, bad_sql: str, error_message: str, dialect: str = "postgresql") -> str:
     repair_question = f"""
 The original user question was:
 {question}
 
-The following PostgreSQL query failed and needs repair.
+The following {dialect} query failed and needs repair.
 
 Bad SQL:
 {bad_sql}
@@ -14,7 +14,7 @@ Bad SQL:
 Execution error:
 {error_message}
 
-Please generate a corrected PostgreSQL SQL query that answers the original user question.
+Please generate a corrected {dialect} SQL query that answers the original user question.
 
 Important:
 - Return ONLY SQL
